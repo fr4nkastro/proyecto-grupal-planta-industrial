@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="ISO-8859-1"?><pnml>
+    <net id="Net-One" type="P/T net">
+        <labels x="770" y="791" width="340" height="30" border="true">
+            <text>Esperar que el sensor SensorStorageEntry detecte el pallet</text>
+        </labels>
+        <labels x="782" y="1048" width="340" height="30" border="true">
+            <text>Esperar que el sensor SensorStorageEntry detecte el pallet</text>
+        </labels>
+        <labels x="762" y="196" width="366" height="197" border="true">
+            <text>Estado inicial
+Validar
+GlobalSortingPriority 
+si TRUE &amp;&amp; SensorSortingReady = TRUE
+	CurrentTransaction = SORTING
+	GlobalSortingPriority=FALSE
+si FALSE &amp;&amp; SensorPackaging = TRUE
+	CurrentTransaction = PACKAGING
+	GlobalSortingPriority=TRUE
+si  FALSE &amp;&amp; SensorPackaging = FALSE
+		CurrentTransaction = SORTING	 </text>
+        </labels>
+        <labels x="784" y="1113" width="412" height="660" border="true">
+            <text>OutStackerCraneStorage1Left=TRUE
+Temporizar
+OutStackerCraneStorage1Lift=TRUE
+OutStackerCraneStorage1Left=FALSE
+Temporizar
+
+Si CurrentStoragePiece=
+	BaseBlue || PackageBlue
+		StackerCrane1TargetPosition:=7
+Si CurrentStoragePiece=
+	BaseGreen || PackageGreen
+		StackerCrane1TargetPosition:=2
+Temporizar
+OutStackerCraneStorage1Right=TRUE
+OutStackerCraneStorage1Lift=FALSE
+Temporizar
+OutStackerCraneStorage1Right=FALSE
+Temporizar
+StackerCrane1TargetPosition:=55
+
+Si CurrentStoragePiece=BaseBlue
+StackerCrane3TargetPosition:=1
+	OutStackerCraneStorage3Left=TRUE
+	Temporizar
+	OutStackerCraneStorage3Lift=TRUE
+	Temporizar
+	OutStackerCraneStorage3Left=FALSE
+	IndexElevatorBaseBlue:=55
+	StackerCrane3TargetPosition:=IndexElevatorBaseBlue-1
+	Temporizar
+	OutStackerCraneStorage3Right=TRUE
+	OutStackerCraneStorage3Lift=FALSE
+	OutStackerCraneStorage3Right=FALSE
+	StackerCrane3TargetPosition:=55
+
+Si CurrentStoragePiece=PackageBlue
+...
+Si CurrentStoragePiece=BaseGreen
+...
+Si CurrentStoragePiece=PackageGreen
+...</text>
+        </labels>
+        <labels x="757" y="426" width="375" height="293" border="true">
+            <text>RCStorage1 = TRUE
+RCStorage2 = TRUE
+RCStorageLoading = TRUE
+
+Si CurrentTransacction = SORTING
+	OutRCTurn = FALSE
+	OutRCTurnLeft = TRUE
+	OutRCSortingPallet2 = TRUE
+
+Si CurrentTransacction = PACKAGING
+	OutRCTurn = TRUE
+	OutRCTurnLeft = TRUE
+	RCPackagingExit = TRUE
+	Detectar SensorRCTurnLimit entonces
+		OutRCTurnLeft = FALSE
+	OutRCTurn = FALSE
+	Temporizar
+	OutRCTurnLeft = TRUE</text>
+        </labels>
+        <labels x="787" y="871" width="366" height="148" border="true">
+            <text>Validar SensorStorageEntry = TRUE
+Entonces
+	RCStorageLoading:=FALSE
+	Si SensorVisionStorage1 = 
+		=5:CurrentPiece=BaseBlue
+		=6:CurrentPiece=BaseGreen
+		=3:CurrentPiece=PackageBlue
+		=4:CurrentPiece=PackageGreen</text>
+        </labels>
+        <place id="P1">
+            <graphics>
+                <position x="585.0" y="900.0"/>
+            </graphics>
+            <name>
+                <value>ESPERANDO_PALLET</value>
+                <graphics>
+                    <offset x="0.0" y="0.0"/>
+                </graphics>
+            </name>
+            <initialMarking>
+                <value>0</value>
+                <graphics>
+                    <offset x="0.0" y="0.0"/>
+                </graphics>
+            </initialMarking>
+            <capacity>
+                <value>0</value>
+            </capacity>
+        </place>
+        <place id="P10">
+            <graphics>
+                <position x="600.0" y="405.0"/>
+            </graphics>
+            <name>
+                <value>INICIANDO_SECUENCIA</value>
+                <graphics>
+                    <offset x="-5.0" y="35.0"/>
+                </graphics>
+            </name>
+            <initialMarking>
+                <value>0</value>
+                <graphics>
+                    <offset x="0.0" y="0.0"/>
+                </graphics>
+            </initialMarking>
+            <capacity>
+                <value>0</value>
+            </capacity>
+        </place>
+        <place id="P6">
+            <graphics>
+                <position x="612.7272727272725" y="1227.727272727273"/>
+            </graphics>
+            <name>
+                <value>UBICANDO_PALLET</value>
+                <graphics>
+                    <offset x="-5.0" y="35.0"/>
+                </graphics>
+            </name>
+            <initialMarking>
+                <value>0</value>
+                <graphics>
+                    <offset x="0.0" y="0.0"/>
+                </graphics>
+            </initialMarking>
+            <capacity>
+                <value>1</value>
+            </capacity>
+        </place>
+        <place id="P7">
+            <graphics>
+                <position x="615.0" y="195.0"/>
+            </graphics>
+            <name>
+                <value>VALIDANDO_TRANSACCION</value>
+                <graphics>
+                    <offset x="-5.0" y="35.0"/>
+                </graphics>
+            </name>
+            <initialMarking>
+                <value>0</value>
+                <graphics>
+                    <offset x="0.0" y="0.0"/>
+                </graphics>
+            </initialMarking>
+            <capacity>
+                <value>0</value>
+            </capacity>
+        </place>
+        <transition id="DETECTAR_CAJA_ALMACEN">
+            <graphics>
+                <position x="585.0" y="1059.5454545454545"/>
+            </graphics>
+            <name>
+                <value>UBICAR_PALLET</value>
+                <graphics>
+                    <offset x="-0.45454545454545425" y="25.000000000000007"/>
+                </graphics>
+            </name>
+            <orientation>
+                <value>90</value>
+            </orientation>
+            <rate>
+                <value>1.0</value>
+            </rate>
+            <timed>
+                <value>false</value>
+            </timed>
+            <infiniteServer>
+                <value>false</value>
+            </infiniteServer>
+            <priority>
+                <value>1</value>
+            </priority>
+        </transition>
+        <transition id="DETECTAR_PALLET">
+            <graphics>
+                <position x="570.0" y="810.0"/>
+            </graphics>
+            <name>
+                <value>DETECTAR_PALLET</value>
+                <graphics>
+                    <offset x="-5.0" y="35.0"/>
+                </graphics>
+            </name>
+            <orientation>
+                <value>90</value>
+            </orientation>
+            <rate>
+                <value>1.0</value>
+            </rate>
+            <timed>
+                <value>false</value>
+            </timed>
+            <infiniteServer>
+                <value>false</value>
+            </infiniteServer>
+            <priority>
+                <value>1</value>
+            </priority>
+        </transition>
+        <transition id="T3">
+            <graphics>
+                <position x="675.0" y="1755.0"/>
+            </graphics>
+            <name>
+                <value>REINICIAR</value>
+                <graphics>
+                    <offset x="-5.0" y="35.0"/>
+                </graphics>
+            </name>
+            <orientation>
+                <value>90</value>
+            </orientation>
+            <rate>
+                <value>1.0</value>
+            </rate>
+            <timed>
+                <value>false</value>
+            </timed>
+            <infiniteServer>
+                <value>false</value>
+            </infiniteServer>
+            <priority>
+                <value>1</value>
+            </priority>
+        </transition>
+        <transition id="T8">
+            <graphics>
+                <position x="615.0" y="300.0"/>
+            </graphics>
+            <name>
+                <value>INICIAR_SECUENCIA</value>
+                <graphics>
+                    <offset x="-5.0" y="35.0"/>
+                </graphics>
+            </name>
+            <orientation>
+                <value>90</value>
+            </orientation>
+            <rate>
+                <value>1.0</value>
+            </rate>
+            <timed>
+                <value>false</value>
+            </timed>
+            <infiniteServer>
+                <value>false</value>
+            </infiniteServer>
+            <priority>
+                <value>1</value>
+            </priority>
+        </transition>
+        <arc id="DETECTAR_CAJA_ALMACEN to P6" source="DETECTAR_CAJA_ALMACEN" target="P6">
+            <graphics/>
+            <inscription>
+                <value>1</value>
+                <graphics/>
+            </inscription>
+            <tagged>
+                <value>false</value>
+            </tagged>
+            <arcpath id="000" x="596" y="1075" curvePoint="false"/>
+            <arcpath id="001" x="621" y="1224" curvePoint="false"/>
+            <type value="normal"/>
+        </arc>
+        <arc id="DETECTAR_PALLET to P1" source="DETECTAR_PALLET" target="P1">
+            <graphics/>
+            <inscription>
+                <value>1</value>
+                <graphics/>
+            </inscription>
+            <tagged>
+                <value>false</value>
+            </tagged>
+            <arcpath id="000" x="580" y="826" curvePoint="false"/>
+            <arcpath id="001" x="593" y="896" curvePoint="false"/>
+            <type value="normal"/>
+        </arc>
+        <arc id="P10 to DETECTAR_PALLET" source="P10" target="DETECTAR_PALLET">
+            <graphics/>
+            <inscription>
+                <value>1</value>
+                <graphics/>
+            </inscription>
+            <tagged>
+                <value>false</value>
+            </tagged>
+            <arcpath id="000" x="610" y="430" curvePoint="false"/>
+            <arcpath id="001" x="580" y="816" curvePoint="false"/>
+            <type value="normal"/>
+        </arc>
+        <arc id="P1 to DETECTAR_CAJA_ALMACEN" source="P1" target="DETECTAR_CAJA_ALMACEN">
+            <graphics/>
+            <inscription>
+                <value>1</value>
+                <graphics/>
+            </inscription>
+            <tagged>
+                <value>false</value>
+            </tagged>
+            <arcpath id="000" x="596" y="926" curvePoint="false"/>
+            <arcpath id="001" x="595" y="1065" curvePoint="false"/>
+            <type value="normal"/>
+        </arc>
+        <arc id="P6 to T3" source="P6" target="T3">
+            <graphics/>
+            <inscription>
+                <value>1</value>
+                <graphics/>
+            </inscription>
+            <tagged>
+                <value>false</value>
+            </tagged>
+            <arcpath id="000" x="625" y="1253" curvePoint="false"/>
+            <arcpath id="001" x="685" y="1760" curvePoint="false"/>
+            <type value="normal"/>
+        </arc>
+        <arc id="P7 to T8" source="P7" target="T8">
+            <graphics/>
+            <inscription>
+                <value>1</value>
+                <graphics/>
+            </inscription>
+            <tagged>
+                <value>false</value>
+            </tagged>
+            <arcpath id="000" x="626" y="220" curvePoint="false"/>
+            <arcpath id="001" x="625" y="306" curvePoint="false"/>
+            <type value="normal"/>
+        </arc>
+        <arc id="T3 to P7" source="T3" target="P7">
+            <graphics/>
+            <inscription>
+                <value>1</value>
+                <graphics/>
+            </inscription>
+            <tagged>
+                <value>false</value>
+            </tagged>
+            <arcpath id="000" x="700" y="1767" curvePoint="false"/>
+            <arcpath id="001" x="747" y="1769" curvePoint="false"/>
+            <arcpath id="002" x="692" y="201" curvePoint="false"/>
+            <arcpath id="003" x="640" y="205" curvePoint="false"/>
+            <type value="normal"/>
+        </arc>
+        <arc id="T8 to P10" source="T8" target="P10">
+            <graphics/>
+            <inscription>
+                <value>1</value>
+                <graphics/>
+            </inscription>
+            <tagged>
+                <value>false</value>
+            </tagged>
+            <arcpath id="000" x="626" y="316" curvePoint="false"/>
+            <arcpath id="001" x="613" y="401" curvePoint="false"/>
+            <type value="normal"/>
+        </arc>
+    </net>
+</pnml>
