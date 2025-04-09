@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-03-16T15:34:21"/>
-  <contentHeader name="Proyecto" modificationDateTime="2025-04-08T23:48:54">
+  <contentHeader name="Proyecto" modificationDateTime="2025-04-09T00:29:09">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -56,6 +56,25 @@
           </enum>
         </baseType>
       </dataType>
+      <dataType name="FSM2_TSTATUS">
+        <baseType>
+          <enum>
+            <values>
+              <value name="FSM2_STANDBY"/>
+              <value name="FSM2_NULLL"/>
+            </values>
+          </enum>
+        </baseType>
+      </dataType>
+      <dataType name="FSM2_TTRANSITIONS">
+        <baseType>
+          <enum>
+            <values>
+              <value name="FSM2_DEACTIVATED"/>
+            </values>
+          </enum>
+        </baseType>
+      </dataType>
     </dataTypes>
     <pous>
       <pou name="main" pouType="program">
@@ -71,6 +90,11 @@
                 <derived name="FSM1_Triggers"/>
               </type>
             </variable>
+            <variable name="FSM2_Petri0">
+              <type>
+                <derived name="FSM2_Petri"/>
+              </type>
+            </variable>
           </localVars>
         </interface>
         <body>
@@ -83,6 +107,12 @@
             </block>
             <block localId="2" typeName="FSM1_Triggers" instanceName="trigger0" width="114" height="20">
               <position x="270" y="80"/>
+              <inputVariables/>
+              <inOutVariables/>
+              <outputVariables/>
+            </block>
+            <block localId="3" typeName="FSM2_Petri" instanceName="FSM2_Petri0" width="100" height="20">
+              <position x="560" y="90"/>
               <inputVariables/>
               <inOutVariables/>
               <outputVariables/>
@@ -773,12 +803,28 @@ END_IF;]]></xhtml:p>
           </ST>
         </body>
       </pou>
+      <pou name="FSM2_Petri" pouType="functionBlock">
+        <interface>
+          <externalVars>
+            <variable name="FSM2_CurrentTransition">
+              <type>
+                <derived name="FSM2_TTRANSITIONS"/>
+              </type>
+            </variable>
+          </externalVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml:p><![CDATA[FSM2_CurrentTransition:=FSM2_DEACTIVATED;]]></xhtml:p>
+          </ST>
+        </body>
+      </pou>
     </pous>
   </types>
   <instances>
     <configurations>
       <configuration name="Config0">
-        <resource name="Res0">
+        <resource name="FSM1_Res">
           <task name="task0" priority="0" interval="T#20ms">
             <pouInstance name="instance0" typeName="main"/>
           </task>
@@ -797,6 +843,14 @@ END_IF;]]></xhtml:p>
               </type>
               <initialValue>
                 <simpleValue value="DISABLE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_CurrentTransition">
+              <type>
+                <derived name="FSM2_TTRANSITIONS"/>
+              </type>
+              <initialValue>
+                <simpleValue value="FSM2_DEACTIVATED"/>
               </initialValue>
             </variable>
             <variable name="PalletFeederOut" address="%QX100.0">
