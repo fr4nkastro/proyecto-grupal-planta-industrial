@@ -86,6 +86,7 @@ FUNCTION_BLOCK FSM1_Triggers
   IF FSM1_FTrigStop.Q THEN
     FSM1_CurrentTransition:=FSM1_DESHABILITADO;
     FSM1_CurrentStatus:= FSM1_ESPERA;
+    SensorVision1Value:=0;
     FSM1_RCSorting1:=FALSE;
     FSM1_RCSorting2:=FALSE;
     FSM1_RCSorting3:=FALSE;
@@ -127,16 +128,16 @@ FUNCTION_BLOCK FSM1_Triggers
   IF FSM1_CurrentStatus = FSM1_ESPERANDO_CLASIFICACION 
     THEN
       IF FSM1_SensorVision1 > 0 THEN
-          SensorVision1Value:= FSM1_SensorVision1;    
+        SensorVision1Value:= FSM1_SensorVision1;    
         FSM1_CurrentTransition := FSM1_DETECTAR_PIEZA_EMPUJAR;
       END_IF;
   END_IF;
 
   IF FSM1_CurrentStatus =FSM1_ESPERANDO_DETECCION_PIEZA 
       THEN
-        IF  SensorVision1Value = 1 OR
-            SensorVision1Value = 3 OR 
-            SensorVision1Value = 5
+        IF  SensorVision1Value = 4 OR
+            SensorVision1Value = 5 OR 
+            SensorVision1Value = 6
         THEN
           TP_Pusher1(
            IN := FSM1_SortingSensor1,
@@ -146,11 +147,15 @@ FUNCTION_BLOCK FSM1_Triggers
           FTRIG_Pusher1(
               CLK := TP_Pusher1.Q
             );
+          IF FTRIG_Pusher1.Q 
+            THEN
+             FSM1_CurrentTransition := FSM1_CLAMPEAR;
+          END_IF;
         END_IF;
         
-        IF SensorVision1Value = 2 OR
-            SensorVision1Value = 4 OR 
-            SensorVision1Value = 6
+        IF SensorVision1Value = 1 OR
+            SensorVision1Value = 2 OR 
+            SensorVision1Value = 3
           THEN
             TP_Pusher2(
              IN := FSM1_SortingSensor2,
@@ -160,17 +165,12 @@ FUNCTION_BLOCK FSM1_Triggers
             FTRIG_Pusher2(
               CLK:= TP_Pusher2.Q
             );
-        END_IF;
-        IF FTRIG_Pusher1.Q OR FTRIG_Pusher2.Q 
-            THEN
-              TP_Pusher1(
-                IN := FALSE
-              );
-              TP_Pusher2(
-                IN := FALSE
-              );
+            IF FTRIG_Pusher2.Q 
+              THEN
               FSM1_CurrentTransition := FSM1_CLAMPEAR;
+            END_IF;
         END_IF;
+        
   END_IF;
         
         
@@ -374,16 +374,16 @@ END_CONFIGURATION
 (*DBG:        return 0;*)
 (*DBG:    }*)
 (*DBG:    switch (debug_vars[idx].type) {*)
-(*DBG:    case TIME_ENUM:*)
-(*DBG:        return sizeof(TIME);*)
+(*DBG:    case BOOL_ENUM:*)
+(*DBG:    case BOOL_P_ENUM:*)
+(*DBG:        return sizeof(BOOL);*)
 (*DBG:    case SINT_ENUM:*)
 (*DBG:        return sizeof(SINT);*)
 (*DBG:    case INT_ENUM:*)
 (*DBG:    case INT_P_ENUM:*)
 (*DBG:        return sizeof(INT);*)
-(*DBG:    case BOOL_ENUM:*)
-(*DBG:    case BOOL_P_ENUM:*)
-(*DBG:        return sizeof(BOOL);*)
+(*DBG:    case TIME_ENUM:*)
+(*DBG:        return sizeof(TIME);*)
 (*DBG:    default:*)
 (*DBG:        return 0;*)
 (*DBG:    }*)
@@ -394,8 +394,12 @@ END_CONFIGURATION
 (*DBG:    void *ptr = debug_vars[idx].ptr;*)
 (*DBG:*)
 (*DBG:    switch (debug_vars[idx].type) {*)
-(*DBG:    case TIME_ENUM:*)
-(*DBG:        return (void *)&((__IEC_TIME_t *) ptr)->value;*)
+(*DBG:    case BOOL_ENUM:*)
+(*DBG:        return (void *)&((__IEC_BOOL_t *) ptr)->value;*)
+(*DBG:    case BOOL_P_ENUM:*)
+(*DBG:        return (void *)((((__IEC_BOOL_p *) ptr)->flags & __IEC_FORCE_FLAG) *)
+(*DBG:                        ? &(((__IEC_BOOL_p *) ptr)->fvalue) *)
+(*DBG:                        : ((__IEC_BOOL_p *) ptr)->value);*)
 (*DBG:    case SINT_ENUM:*)
 (*DBG:        return (void *)&((__IEC_SINT_t *) ptr)->value;*)
 (*DBG:    case INT_ENUM:*)
@@ -404,12 +408,8 @@ END_CONFIGURATION
 (*DBG:        return (void *)((((__IEC_INT_p *) ptr)->flags & __IEC_FORCE_FLAG) *)
 (*DBG:                        ? &(((__IEC_INT_p *) ptr)->fvalue) *)
 (*DBG:                        : ((__IEC_INT_p *) ptr)->value);*)
-(*DBG:    case BOOL_ENUM:*)
-(*DBG:        return (void *)&((__IEC_BOOL_t *) ptr)->value;*)
-(*DBG:    case BOOL_P_ENUM:*)
-(*DBG:        return (void *)((((__IEC_BOOL_p *) ptr)->flags & __IEC_FORCE_FLAG) *)
-(*DBG:                        ? &(((__IEC_BOOL_p *) ptr)->fvalue) *)
-(*DBG:                        : ((__IEC_BOOL_p *) ptr)->value);*)
+(*DBG:    case TIME_ENUM:*)
+(*DBG:        return (void *)&((__IEC_TIME_t *) ptr)->value;*)
 (*DBG:    default:*)
 (*DBG:        return 0;*)
 (*DBG:    }*)
@@ -422,10 +422,16 @@ END_CONFIGURATION
 (*DBG:    if (forced) {*)
 (*DBG:        size_t var_size = get_var_size(idx);*)
 (*DBG:        switch (debug_vars[idx].type) {*)
-(*DBG:        case TIME_ENUM: {*)
-(*DBG:            memcpy(&((__IEC_TIME_t *) ptr)->value, val, var_size);*)
-(*DBG:            //((__IEC_TIME_t *) ptr)->value = *((TIME *) val);*)
-(*DBG:            ((__IEC_TIME_t *) ptr)->flags |= __IEC_FORCE_FLAG;*)
+(*DBG:        case BOOL_ENUM: {*)
+(*DBG:            memcpy(&((__IEC_BOOL_t *) ptr)->value, val, var_size);*)
+(*DBG:            //((__IEC_BOOL_t *) ptr)->value = *((BOOL *) val);*)
+(*DBG:            ((__IEC_BOOL_t *) ptr)->flags |= __IEC_FORCE_FLAG;*)
+(*DBG:            break;*)
+(*DBG:        }*)
+(*DBG:        case BOOL_P_ENUM: {*)
+(*DBG:            memcpy(&((__IEC_BOOL_p *) ptr)->fvalue, val, var_size);*)
+(*DBG:            //((__IEC_BOOL_p *) ptr)->fvalue = *((BOOL *) val);*)
+(*DBG:            ((__IEC_BOOL_p *) ptr)->flags |= __IEC_FORCE_FLAG;*)
 (*DBG:            break;*)
 (*DBG:        }*)
 (*DBG:        case SINT_ENUM: {*)
@@ -446,16 +452,10 @@ END_CONFIGURATION
 (*DBG:            ((__IEC_INT_p *) ptr)->flags |= __IEC_FORCE_FLAG;*)
 (*DBG:            break;*)
 (*DBG:        }*)
-(*DBG:        case BOOL_ENUM: {*)
-(*DBG:            memcpy(&((__IEC_BOOL_t *) ptr)->value, val, var_size);*)
-(*DBG:            //((__IEC_BOOL_t *) ptr)->value = *((BOOL *) val);*)
-(*DBG:            ((__IEC_BOOL_t *) ptr)->flags |= __IEC_FORCE_FLAG;*)
-(*DBG:            break;*)
-(*DBG:        }*)
-(*DBG:        case BOOL_P_ENUM: {*)
-(*DBG:            memcpy(&((__IEC_BOOL_p *) ptr)->fvalue, val, var_size);*)
-(*DBG:            //((__IEC_BOOL_p *) ptr)->fvalue = *((BOOL *) val);*)
-(*DBG:            ((__IEC_BOOL_p *) ptr)->flags |= __IEC_FORCE_FLAG;*)
+(*DBG:        case TIME_ENUM: {*)
+(*DBG:            memcpy(&((__IEC_TIME_t *) ptr)->value, val, var_size);*)
+(*DBG:            //((__IEC_TIME_t *) ptr)->value = *((TIME *) val);*)
+(*DBG:            ((__IEC_TIME_t *) ptr)->flags |= __IEC_FORCE_FLAG;*)
 (*DBG:            break;*)
 (*DBG:        }*)
 (*DBG:        default:*)
@@ -463,8 +463,11 @@ END_CONFIGURATION
 (*DBG:        }*)
 (*DBG:    } else {*)
 (*DBG:        switch (debug_vars[idx].type) {*)
-(*DBG:        case TIME_ENUM:*)
-(*DBG:            ((__IEC_TIME_t *) ptr)->flags &= ~__IEC_FORCE_FLAG;*)
+(*DBG:        case BOOL_ENUM:*)
+(*DBG:            ((__IEC_BOOL_t *) ptr)->flags &= ~__IEC_FORCE_FLAG;*)
+(*DBG:            break;*)
+(*DBG:        case BOOL_P_ENUM:*)
+(*DBG:            ((__IEC_BOOL_p *) ptr)->flags &= ~__IEC_FORCE_FLAG;*)
 (*DBG:            break;*)
 (*DBG:        case SINT_ENUM:*)
 (*DBG:            ((__IEC_SINT_t *) ptr)->flags &= ~__IEC_FORCE_FLAG;*)
@@ -475,11 +478,8 @@ END_CONFIGURATION
 (*DBG:        case INT_P_ENUM:*)
 (*DBG:            ((__IEC_INT_p *) ptr)->flags &= ~__IEC_FORCE_FLAG;*)
 (*DBG:            break;*)
-(*DBG:        case BOOL_ENUM:*)
-(*DBG:            ((__IEC_BOOL_t *) ptr)->flags &= ~__IEC_FORCE_FLAG;*)
-(*DBG:            break;*)
-(*DBG:        case BOOL_P_ENUM:*)
-(*DBG:            ((__IEC_BOOL_p *) ptr)->flags &= ~__IEC_FORCE_FLAG;*)
+(*DBG:        case TIME_ENUM:*)
+(*DBG:            ((__IEC_TIME_t *) ptr)->flags &= ~__IEC_FORCE_FLAG;*)
 (*DBG:            break;*)
 (*DBG:        default:*)
 (*DBG:            break;*)
