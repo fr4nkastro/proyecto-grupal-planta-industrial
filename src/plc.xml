@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-03-16T15:34:21"/>
-  <contentHeader name="Proyecto" modificationDateTime="2025-04-11T22:27:04">
+  <contentHeader name="Proyecto" modificationDateTime="2025-04-12T13:24:28">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -46,8 +46,9 @@
         <baseType>
           <enum>
             <values>
-              <value name="FSM2_STANDBY"/>
               <value name="FSM2_NULLL"/>
+              <value name="FSM2_VALIDANDO_TRANSACCION"/>
+              <value name="FSM2_INICIANDO_SECUENCIA"/>
             </values>
           </enum>
         </baseType>
@@ -57,6 +58,8 @@
           <enum>
             <values>
               <value name="FSM2_DESHABILITADO"/>
+              <value name="FSM2_INICIAR_SECUENCIA"/>
+              <value name="FSM2_DETECTAR_PALLET"/>
             </values>
           </enum>
         </baseType>
@@ -345,8 +348,7 @@ END_IF;
 
 IF FSM1_CurrentStatus =FSM1_ESPERANDO_DETECCION_PIEZA 
     THEN
-      IF  SensorVision1Value = 4 OR
-          SensorVision1Value = 5 OR 
+      IF  SensorVision1Value = 5 OR 
           SensorVision1Value = 6
       THEN
         TP_Pusher1(
@@ -357,14 +359,16 @@ IF FSM1_CurrentStatus =FSM1_ESPERANDO_DETECCION_PIEZA
         FTRIG_Pusher1(
             CLK := TP_Pusher1.Q
           );
-        IF FTRIG_Pusher1.Q 
-          THEN
-           FSM1_CurrentTransition := FSM1_CLAMPEAR;
+        IF FTRIG_Pusher1.Q 
+
+          THEN
+
+           FSM1_CurrentTransition := FSM1_CLAMPEAR;
+
         END_IF;
       END_IF;
       
-      IF SensorVision1Value = 1 OR
-          SensorVision1Value = 2 OR 
+      IF  SensorVision1Value = 2 OR 
           SensorVision1Value = 3
         THEN
           TP_Pusher2(
@@ -387,6 +391,48 @@ END_IF;
           
             
 ]]></xhtml:p>
+          </ST>
+        </body>
+      </pou>
+      <pou name="FSM2_Petri" pouType="functionBlock">
+        <interface>
+          <externalVars>
+            <variable name="FSM2_CurrentTransition">
+              <type>
+                <derived name="FSM2_TTRANSITIONS"/>
+              </type>
+            </variable>
+            <variable name="FSM2_CurrentStatus">
+              <type>
+                <derived name="FSM2_TSTATUS"/>
+              </type>
+            </variable>
+          </externalVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml:p><![CDATA[]]></xhtml:p>
+          </ST>
+        </body>
+      </pou>
+      <pou name="FSM2_Triggers" pouType="functionBlock">
+        <interface>
+          <externalVars>
+            <variable name="FSM2_CurrentStatus">
+              <type>
+                <derived name="FSM2_TSTATUS"/>
+              </type>
+            </variable>
+            <variable name="FSM2_CurrentTransition">
+              <type>
+                <derived name="FSM2_TTRANSITIONS"/>
+              </type>
+            </variable>
+          </externalVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml:p><![CDATA[]]></xhtml:p>
           </ST>
         </body>
       </pou>
@@ -429,7 +475,7 @@ END_IF;
                 <derived name="FSM2_TSTATUS"/>
               </type>
               <initialValue>
-                <simpleValue value="FSM2_NULLL"/>
+                <simpleValue value="FSM2_VALIDANDO_TRANSACCION"/>
               </initialValue>
             </variable>
             <variable name="FSM1_BtnStart" address="%IX100.0">
