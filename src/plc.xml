@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-03-16T15:34:21"/>
-  <contentHeader name="Proyecto" modificationDateTime="2025-04-09T00:44:58">
+  <contentHeader name="Proyecto" modificationDateTime="2025-04-10T01:08:05">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -20,18 +20,11 @@
         <baseType>
           <enum>
             <values>
-              <value name="STANDBY"/>
-              <value name="WAITING_BOX"/>
-              <value name="COUNTED2BOXES"/>
-              <value name="FIRST_PUSH"/>
-              <value name="COUNTED2PUSHES"/>
-              <value name="ADDING_PALLET_LEVEL"/>
-              <value name="CLAMPED"/>
-              <value name="PALLET_AT_ENTRY"/>
-              <value name="PALLET_LOADED"/>
-              <value name="ELEVATOR_UP"/>
-              <value name="ELEVATOR_DOWN"/>
-              <value name="EMPTY_EXIT_CONVEYOR"/>
+              <value name="FSM1_ESPERA"/>
+              <value name="FSM1_ARRANCANDO_BANDAS"/>
+              <value name="FSM1_ESPERANDO_CLASIFICACION"/>
+              <value name="FSM1_ESPERANDO_DETECCION_PIEZA"/>
+              <value name="FSM1_CLAMPEANDO"/>
             </values>
           </enum>
         </baseType>
@@ -40,18 +33,11 @@
         <baseType>
           <enum>
             <values>
-              <value name="START"/>
-              <value name="COUNT2BOXES"/>
-              <value name="COUNT_PUSH"/>
-              <value name="COUNT_PUSH2"/>
-              <value name="PALLET_LEVEL"/>
-              <value name="ADD_PALLET_LEVEL"/>
-              <value name="CLAMP"/>
-              <value name="DETECT_PALLET_AT_ENTRY"/>
-              <value name="DETECT_ELEVATOR_UP"/>
-              <value name="DETECT_ELEVATOR_DOWN"/>
-              <value name="DETECT_EMPTY_CONVEYOR"/>
-              <value name="DISABLE"/>
+              <value name="FSM1_INICIAR"/>
+              <value name="FSM1_DESHABILITADO"/>
+              <value name="FSM1_CLASIFICAR_CAJAS_COLOR"/>
+              <value name="FSM1_DETECTAR_PIEZA_EMPUJAR"/>
+              <value name="FSM1_CLAMPEAR"/>
             </values>
           </enum>
         </baseType>
@@ -70,7 +56,7 @@
         <baseType>
           <enum>
             <values>
-              <value name="FSM2_DEACTIVATED"/>
+              <value name="FSM2_DESHABILITADO"/>
             </values>
           </enum>
         </baseType>
@@ -80,39 +66,28 @@
       <pou name="main" pouType="program">
         <interface>
           <localVars>
-            <variable name="petri0">
+            <variable name="FSM1_Petri0">
               <type>
                 <derived name="FSM1_Petri"/>
               </type>
             </variable>
-            <variable name="trigger0">
+            <variable name="FSM1_Triggers0">
               <type>
                 <derived name="FSM1_Triggers"/>
-              </type>
-            </variable>
-            <variable name="FSM2_Petri0">
-              <type>
-                <derived name="FSM2_Petri"/>
               </type>
             </variable>
           </localVars>
         </interface>
         <body>
           <LD>
-            <block localId="1" typeName="FSM1_Petri" instanceName="petri0" width="90" height="20">
-              <position x="110" y="90"/>
+            <block localId="4" typeName="FSM1_Petri" instanceName="FSM1_Petri0" width="100" height="20">
+              <position x="140" y="100"/>
               <inputVariables/>
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <block localId="2" typeName="FSM1_Triggers" instanceName="trigger0" width="114" height="20">
-              <position x="270" y="80"/>
-              <inputVariables/>
-              <inOutVariables/>
-              <outputVariables/>
-            </block>
-            <block localId="3" typeName="FSM2_Petri" instanceName="FSM2_Petri0" width="100" height="20">
-              <position x="560" y="90"/>
+            <block localId="5" typeName="FSM1_Triggers" instanceName="FSM1_Triggers0" width="120" height="20">
+              <position x="340" y="120"/>
               <inputVariables/>
               <inOutVariables/>
               <outputVariables/>
@@ -123,12 +98,12 @@
       <pou name="FSM1_Petri" pouType="functionBlock">
         <interface>
           <externalVars>
-            <variable name="CurrentTransition">
+            <variable name="FSM1_CurrentTransition">
               <type>
                 <derived name="FSM1_TRANSITIONS"/>
               </type>
             </variable>
-            <variable name="CurrentStatus">
+            <variable name="FSM1_CurrentStatus">
               <type>
                 <derived name="FSM1_TSTATUS"/>
               </type>
@@ -138,61 +113,24 @@
         <body>
           <ST>
             <xhtml:p><![CDATA[(*Red FSM1_Petri*)
-IF CurrentTransition = START 
+IF FSM1_CurrentTransition = FSM1_INICIAR 
   THEN
-    CurrentStatus:=WAITING_BOX;
+    FSM1_CurrentStatus:=FSM1_ARRANCANDO_BANDAS;
 END_IF;
 
-(*Count2Boxes*)
-IF CurrentTransition = COUNT2BOXES
+IF FSM1_CurrentTransition = FSM1_CLASIFICAR_CAJAS_COLOR 
+  THEN
+    FSM1_CurrentStatus:=FSM1_ESPERANDO_CLASIFICACION;
+END_IF;
+
+IF FSM1_CurrentTransition = FSM1_DETECTAR_PIEZA_EMPUJAR
     THEN
-      CurrentStatus:= COUNTED2BOXES;
+      FSM1_CurrentStatus:=FSM1_ESPERANDO_DETECCION_PIEZA;
 END_IF;
 
-(*FirstPush*)
-IF CurrentTransition = COUNT_PUSH
-  THEN
-    CurrentStatus:=WAITING_BOX;
-END_IF;
-
-IF CurrentTransition = COUNT_PUSH2
+IF FSM1_CurrentTransition = FSM1_CLAMPEAR
     THEN
-      CurrentStatus:= COUNTED2PUSHES;
-END_IF;
-
-IF CurrentTransition = PALLET_LEVEL 
-  THEN
-    CurrentStatus:= ADDING_PALLET_LEVEL;
-END_IF;
-
-IF CurrentTransition = ADD_PALLET_LEVEL THEN
-  CurrentStatus:=WAITING_BOX;
-END_IF;
-
-IF CurrentTransition = CLAMP
-  THEN
-    CurrentStatus:= CLAMPED;
-END_IF;
-
-
-IF CurrentTransition = DETECT_PALLET_AT_ENTRY
-  THEN
-    CurrentStatus:= PALLET_AT_ENTRY;
-END_IF;
-
-IF CurrentTransition = DETECT_ELEVATOR_UP
-  THEN
-    CurrentStatus:= ELEVATOR_UP;
-END_IF;
-
-IF CurrentTransition = DETECT_ELEVATOR_DOWN
-  THEN
-    CurrentStatus:= ELEVATOR_DOWN;
-END_IF;
-
-IF CurrentTransition = DETECT_EMPTY_CONVEYOR
-  THEN
-    CurrentStatus:= EMPTY_EXIT_CONVEYOR;
+      FSM1_CurrentStatus:=FSM1_CLAMPEANDO;
 END_IF;
 
 ]]></xhtml:p>
@@ -202,620 +140,253 @@ END_IF;
       <pou name="FSM1_Triggers" pouType="functionBlock">
         <interface>
           <externalVars>
-            <variable name="CurrentStatus">
+            <variable name="FSM1_CurrentStatus">
               <type>
                 <derived name="FSM1_TSTATUS"/>
               </type>
             </variable>
-            <variable name="CurrentTransition">
+            <variable name="FSM1_CurrentTransition">
               <type>
                 <derived name="FSM1_TRANSITIONS"/>
               </type>
             </variable>
-            <variable name="BoxFeeder">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
           </externalVars>
           <localVars>
-            <variable name="CTUBox">
-              <type>
-                <derived name="CTU"/>
-              </type>
-            </variable>
-            <variable name="CTUPush">
-              <type>
-                <derived name="CTU"/>
-              </type>
-            </variable>
-          </localVars>
-          <externalVars>
-            <variable name="SensorBoxAtEntry">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="PushOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-          </externalVars>
-          <localVars>
-            <variable name="TONPush">
-              <type>
-                <derived name="TON"/>
-              </type>
-            </variable>
-            <variable name="FTrigBox">
+            <variable name="FSM1_FTrigStop">
               <type>
                 <derived name="F_TRIG"/>
               </type>
             </variable>
-            <variable name="TONWaitPush">
+          </localVars>
+          <externalVars>
+            <variable name="FSM1_RCSorting1">
               <type>
-                <derived name="TON"/>
+                <BOOL/>
               </type>
             </variable>
-            <variable name="TPRetract">
+            <variable name="FSM1_RCSorting2">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_RCSorting3">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_RCSorting4">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_RCSorting5">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_RCSorting6">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_RCSorting7">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_RCSorting8">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_RCSorting9">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_BtnStop">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_BtnStart">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_SensorVision1">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="SensorVision1Value">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM1_SortingSensor1">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_SortingSensor2">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_PusherSorting1">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_PusherSorting2">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="TP_Pusher1">
               <type>
                 <derived name="TP"/>
               </type>
             </variable>
-            <variable name="TONWaitLastBox">
-              <type>
-                <derived name="TON"/>
-              </type>
-            </variable>
-          </localVars>
-          <externalVars>
-            <variable name="ButtonStart">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="CounterBoxes">
-              <type>
-                <INT/>
-              </type>
-            </variable>
-            <variable name="CounterPushes">
-              <type>
-                <INT/>
-              </type>
-            </variable>
-          </externalVars>
-          <localVars>
-            <variable name="FTrigPush">
-              <type>
-                <derived name="F_TRIG"/>
-              </type>
-            </variable>
-            <variable name="FTrigRetract">
-              <type>
-                <derived name="F_TRIG"/>
-              </type>
-            </variable>
-          </localVars>
-          <externalVars>
-            <variable name="ClampOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="PalletFeederOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="LoadBeltOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="LoadPalletOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="SensorPalletAtEntry">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-          </externalVars>
-          <localVars>
-            <variable name="RTrigPalletAtEntry">
-              <type>
-                <derived name="R_TRIG"/>
-              </type>
-            </variable>
-          </localVars>
-          <externalVars>
-            <variable name="MoveToLimitOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="ElevatorUpOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="SensorElevatorMoving">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-          </externalVars>
-          <localVars>
-            <variable name="FTrigElevatorMoving">
-              <type>
-                <derived name="F_TRIG"/>
-              </type>
-            </variable>
-            <variable name="FTrigPalletLoaded">
-              <type>
-                <derived name="R_TRIG"/>
-              </type>
-            </variable>
-            <variable name="TPPalletDetected">
+            <variable name="TP_Pusher2">
               <type>
                 <derived name="TP"/>
               </type>
             </variable>
           </localVars>
           <externalVars>
-            <variable name="OpenPlateOut">
+            <variable name="FSM1_RCGreen">
               <type>
                 <BOOL/>
               </type>
             </variable>
-            <variable name="ElevatorDownOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="ExitConveyorOut">
+            <variable name="FSM1_RCBlue">
               <type>
                 <BOOL/>
               </type>
             </variable>
           </externalVars>
           <localVars>
-            <variable name="TONEmptyExitConveyor">
-              <type>
-                <derived name="TON"/>
-              </type>
-            </variable>
-            <variable name="TONElevatorDown">
-              <type>
-                <derived name="TON"/>
-              </type>
-            </variable>
-          </localVars>
-          <externalVars>
-            <variable name="TurnOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="StartLightOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="StopLightOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="WarningLightOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="ResetLightOut">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="ButtonReset">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-            <variable name="ButtonStop">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
-          </externalVars>
-          <localVars>
-            <variable name="FTrigStop">
+            <variable name="FTRIG_Pusher1">
               <type>
                 <derived name="F_TRIG"/>
               </type>
             </variable>
-          </localVars>
-          <externalVars>
-            <variable name="SensorPalletLoaded">
+            <variable name="FTRIG_Pusher2">
               <type>
-                <BOOL/>
-              </type>
-            </variable>
-          </externalVars>
-          <localVars>
-            <variable name="MaxBoxes">
-              <type>
-                <INT/>
-              </type>
-            </variable>
-            <variable name="MaxPushes">
-              <type>
-                <INT/>
-              </type>
-            </variable>
-            <variable name="MaxLevels">
-              <type>
-                <INT/>
-              </type>
-              <initialValue>
-                <simpleValue value="1"/>
-              </initialValue>
-            </variable>
-          </localVars>
-          <externalVars>
-            <variable name="CounterLevels">
-              <type>
-                <INT/>
-              </type>
-            </variable>
-          </externalVars>
-          <localVars>
-            <variable name="CTULevels">
-              <type>
-                <derived name="CTU"/>
-              </type>
-            </variable>
-            <variable name="TONAddLevel">
-              <type>
-                <derived name="TON"/>
-              </type>
-            </variable>
-            <variable name="TONAddLevel0">
-              <type>
-                <derived name="TON"/>
-              </type>
-            </variable>
-            <variable name="TONAddLevel1">
-              <type>
-                <derived name="TON"/>
+                <derived name="F_TRIG"/>
               </type>
             </variable>
           </localVars>
         </interface>
         <body>
           <ST>
-            <xhtml:p><![CDATA[FTrigStop(
+            <xhtml:p><![CDATA[FSM1_FTrigStop(
 
-     CLK := ButtonStop
+     CLK := FSM1_BtnStop
 );
 
-IF FTrigStop.Q THEN
-  CurrentTransition:=DISABLE;
-  CurrentStatus:= STANDBY;
-  StartLightOut:= FALSE;
-  ClampOut:=FALSE;
-  WarningLightOut:= TRUE;
-  StopLightOut:= TRUE;
-  ExitConveyorOut:=FALSE;
-  LoadBeltOut:=FALSE;
-  BoxFeeder:=FALSE;
-  PalletFeederOut:=FALSE;
-  ElevatorUpOut:=FALSE;
-  ElevatorDownOut:=FALSE;
-  LoadPalletOut:=FALSE;
-  
+IF FSM1_FTrigStop.Q THEN
+  FSM1_CurrentTransition:=FSM1_DESHABILITADO;
+  FSM1_CurrentStatus:= FSM1_ESPERA;
+  FSM1_RCSorting1:=FALSE;
+  FSM1_RCSorting2:=FALSE;
+  FSM1_RCSorting3:=FALSE;
+  FSM1_RCSorting4:=FALSE;
+  FSM1_RCSorting5:=FALSE;
+  FSM1_RCSorting6:=FALSE;
+  FSM1_RCSorting7:=FALSE;
+  FSM1_RCSorting8:=FALSE;
+  FSM1_RCSorting9:=FALSE;
+  FSM1_RCGreen:=FALSE;
+  FSM1_RCBlue:=FALSE;
 END_IF;
 
-IF CurrentStatus = STANDBY
+IF FSM1_CurrentStatus = FSM1_ESPERA
   THEN
-  StopLightOut:= TRUE;
-  IF ButtonReset THEN
-    ResetLightOut:=TRUE;
-
-    CTUBox(
-
-      R:= TRUE
-      );
-      CounterBoxes:=0;
-
-    CTUPush(
-
-      R:=TRUE
-      );
-      CounterPushes:=0;
-  ELSE
-    ResetLightOut:=FALSE;
-
-  END_IF;
-  IF ButtonStart 
+  IF FSM1_BtnStart
     THEN
-      StartLightOut:= TRUE;
-      StopLightOut:= FALSE;
-      WarningLightOut:= False;
-      CurrentTransition:= START;
+      FSM1_CurrentTransition:= FSM1_INICIAR;
   END_IF;
 END_IF;
 
-IF CurrentStatus = WAITING_BOX
+IF FSM1_CurrentStatus = FSM1_ARRANCANDO_BANDAS
   THEN
-    IF TurnOut = TRUE THEN
-      MaxBoxes:=3;
-      MaxPushes:=2;
-    ELSE 
-      MaxBoxes:=2;
-      MaxPushes:=3;
+      FSM1_RCSorting1:=TRUE;
+      FSM1_RCSorting2:=TRUE;
+      FSM1_RCSorting3:=TRUE;
+      FSM1_RCSorting4:=TRUE;
+      FSM1_RCSorting5:=TRUE;
+      FSM1_RCSorting6:=TRUE;
+      FSM1_RCSorting7:=TRUE;
+      FSM1_RCSorting8:=TRUE;
+      FSM1_RCSorting9:=TRUE;
+      FSM1_RCGreen:=TRUE;
+      FSM1_RCBlue:=TRUE;
+      SensorVision1Value:=0;
+      FSM1_CurrentTransition:=FSM1_CLASIFICAR_CAJAS_COLOR;
+END_IF;
+
+IF FSM1_CurrentStatus = FSM1_ESPERANDO_CLASIFICACION 
+  THEN
+    IF FSM1_SensorVision1 > 0 THEN
+        SensorVision1Value:= FSM1_SensorVision1;    
+      FSM1_CurrentTransition := FSM1_DETECTAR_PIEZA_EMPUJAR;
     END_IF;
-    (*
-    Bloque F_TRIG (detector de flanco descendente) detecta cuando se activa la entrada del sensor que detecta cajas
-    Para que el CTUBox (counter) incrementa el counter
-    *)
-    FTrigBox(
-      CLK := SensorBoxAtEntry
-    );
-    CTUBox(
-      R:= FALSE,
-      CU := FTrigBox.Q,
-      PV := MaxBoxes,
-      CV => CounterBoxes
-     );
-    TONWaitLastBox(
-     IN := CTUBox.Q,
-     PT := T#500ms
-    );
-    (*Delay paso ultima caja*)
-    IF TONWaitLastBox.Q
+END_IF;
+
+IF FSM1_CurrentStatus =FSM1_ESPERANDO_DETECCION_PIEZA 
+    THEN
+      IF  SensorVision1Value = 1 OR
+          SensorVision1Value = 3 OR 
+          SensorVision1Value = 5
       THEN
-      BoxFeeder := FALSE;
-      LoadBeltOut:=TRUE;
-    ELSE
-      BoxFeeder:=TRUE;
-      LoadBeltOut:=TRUE;
-    END_IF;
-    (*Delay antes de espera de cajas en posición de empuje*)
-    TONWaitPush(
-     IN := TONWaitLastBox.Q,
-     PT := T#1500ms
-    );
-    IF TONWaitPush.Q
-      THEN
-        (* Habilitar PushOut al inicio *)
-        TONWaitLastBox(
-        IN := FALSE
+        TP_Pusher1(
+         IN := FSM1_SortingSensor1,
+         PT := T#2s,
+         Q => FSM1_PusherSorting1
         );
-        PushOut := TRUE;
-        CurrentTransition:=COUNT2BOXES;
-    END_IF;
-END_IF;
-
-IF CurrentStatus = COUNTED2BOXES 
-  THEN
-    BoxFeeder := FALSE;
-    LoadBeltOut := FALSE;
-    (* Iniciar temporizador para mantener PushOut activo por 2 segundos *)
-    TONPush(
-      IN := PushOut,
-      PT := T#1s
-    );
-
-    (* Cuando el temporizador se cumple, desactiva PushOut *)
-    IF TONPush.Q THEN
-        PushOut := FALSE;
-    END_IF;
-
-    (* Detectar flanco descendente de PushOut para contabilizar *)
-    FTrigPush(
-      CLK := PushOut  (* Detecta cuando PushOut pasa de TRUE a FALSE *)
-    );
-
-    (* Contar solo cuando PushOut realmente ha vuelto a FALSE y ha pasado el tiempo de retracción *)
-    CTUPush(
-      R := FALSE,
-      CU := FTrigPush.Q,  (* Incrementa solo en el flanco ascendente del temporizador *)
-      PV := MaxPushes,
-      CV => CounterPushes
-    );
-
-    (* Cambiar de estado solo si el actuador se ha retraído y contado correctamente *)
-    IF CTUPush.CV < MaxPushes AND FTrigPush.Q THEN
-      CTUBox(
-        R:= TRUE
-      );
-      TONPush(
-      IN:= FALSE);
-      CurrentTransition := COUNT_PUSH;
-    END_IF;
-    IF CTUPush.CV = MaxPushes AND FTrigPush.Q THEN
-      CTUBox(
-        R:= TRUE
-      );
-      CTUPush(
-        R:= TRUE
-      );
-      TONPush(
-      IN:= FALSE);
-      IF TurnOut = FALSE THEN
-          TurnOut := TRUE;
-      ELSE
-        TurnOut := FALSE;
-      END_IF;
-      CurrentTransition := COUNT_PUSH2;
-    END_IF;
-END_IF;
-
-IF CurrentStatus = COUNTED2PUSHES 
-  THEN
-    CounterLevels:=CounterLevels+1;
-    IF CounterLevels =1 OR  CounterLevels >= MaxLevels THEN
-      ClampOut:= TRUE;
-      PalletFeederOut:= TRUE;
-      LoadPalletOut:=TRUE;
-      CurrentTransition:=CLAMP;
-    ELSE 
-      CurrentTransition:=PALLET_LEVEL;
-    END_IF;
-END_IF;
-
-IF CurrentStatus = ADDING_PALLET_LEVEL
-  THEN
-  IF CounterLevels < MaxLevels THEN
-
-        OpenPlateOut:=TRUE;
-        MoveToLimitOut:=FALSE;
-        ElevatorUpOut:=FALSE;
-        TONAddLevel(
-          IN:= NOT MoveToLimitOut,
-          PT:=T#3s
-        );
-        IF TONAddLevel.Q THEN  
-          ElevatorDownOut:=TRUE;
-          TONAddLevel1(
-            IN:=TONAddLevel.Q,
-            PT:=T#3s
+        FTRIG_Pusher1(
+            CLK := TP_Pusher1.Q
           );
-          IF TONAddLevel1.Q THEN
-            ClampOut:=FALSE;
-            OpenPlateOut:=FALSE;
-            TONAddLevel1(
-              IN:=FALSE
-              );
-            TONAddLevel(
-              IN:=FALSE
-            );
-            CurrentTransition:= ADD_PALLET_LEVEL;
-          END_IF;
-        END_IF;
-    END_IF;
-END_IF;
-
-IF CurrentStatus = CLAMPED THEN
-        (*Temporizador para detección de palet*)
-        (*Detector de flanco 1,0*)
-        FTrigPalletLoaded(
-          CLK:=SensorPalletLoaded
-          ); 
-        IF FTrigPalletLoaded.Q THEN (* Ha pasado 1 segundo desde la detección *)
-            PalletFeederOut := FALSE;
-            LoadPalletOut := FALSE;
-            CurrentTransition := DETECT_PALLET_AT_ENTRY;
-            
-        END_IF;
-END_IF;
-
-
-IF CurrentStatus = PALLET_AT_ENTRY
-  THEN
-    MoveToLimitOut:= TRUE;
-    ElevatorUpOut:= TRUE;
-    (*Detectar flanco descendente SensorElevatorMoving 1,0*)
-    FTrigElevatorMoving(
-      CLK:=SensorElevatorMoving
-    );
-    IF FTrigElevatorMoving.Q
-      THEN
-        OpenPlateOut:=TRUE;
-        CurrentTransition:= DETECT_ELEVATOR_UP;
-    END_IF;
-    
-END_IF;
-
-IF CurrentStatus = ELEVATOR_UP
-  THEN
-    ElevatorUpOut:=FALSE;
-    TONElevatorDown(
-      IN:=OpenPlateOut,
-      PT:=T#3s
-    );
-    IF TONElevatorDown.Q
-      THEN
-      TONElevatorDown(
-        IN:=FALSE
-      );
-      IF CounterLevels < MaxLevels THEN
-        MoveToLimitOut:=FALSE;
-        ElevatorDownOut:=TRUE;
-        TONAddLevel1(
-          IN:= NOT MoveToLimitOut,
-          PT:=T#3s
-        );
-        IF TONAddLevel1.Q THEN  
-          ClampOut:=FALSE;
-          OpenPlateOut:=FALSE;
-          ElevatorDownOut:=FALSE;
-          CurrentTransition:= ADD_PALLET_LEVEL;
-        END_IF;
-      ELSE
-        ElevatorDownOut:=TRUE;
-        CurrentTransition:=DETECT_ELEVATOR_DOWN;
       END_IF;
-    END_IF;
+      
+      IF SensorVision1Value = 2 OR
+          SensorVision1Value = 4 OR 
+          SensorVision1Value = 6
+        THEN
+          TP_Pusher2(
+           IN := FSM1_SortingSensor2,
+           PT := T#2s,
+           Q => FSM1_PusherSorting2
+          );
+          FTRIG_Pusher2(
+            CLK:= TP_Pusher2.Q
+          );
+      END_IF;
+      IF FTRIG_Pusher1.Q OR FTRIG_Pusher2.Q 
+          THEN
+            TP_Pusher1(
+              IN := FALSE
+            );
+            TP_Pusher2(
+              IN := FALSE
+            );
+            FSM1_CurrentTransition := FSM1_CLAMPEAR;
+      END_IF;
 END_IF;
-
-
-
-IF CurrentStatus = ELEVATOR_DOWN
-  THEN
-     
-    (*Detectar flanco descendente SensorElevatorMoving 1,0*)
-    FTrigElevatorMoving(
-      CLK:=SensorElevatorMoving
-    );
-    IF FTrigElevatorMoving.Q
-      THEN
-        ElevatorDownOut:=FALSE;
-        ClampOut:=FALSE;
-        OpenPlateOut:=FALSE;
-        LoadPalletOut:=TRUE;
-        ExitConveyorOut:=TRUE;
-        CurrentTransition:= DETECT_EMPTY_CONVEYOR;
-    END_IF;
-END_IF;
-
-IF CurrentStatus = EMPTY_EXIT_CONVEYOR
-  THEN
-    TONEmptyExitConveyor(
-      IN:= TRUE,
-      PT:=T#10s
-    );
-    IF TONEmptyExitConveyor.Q
-      THEN
-        LoadPalletOut:=FALSE;
-        ExitConveyorOut:=FALSE;
-        TONEmptyExitConveyor(
-          IN:=FALSE
-        );
-        CurrentTransition:=START;
-    END_IF;
-END_IF;]]></xhtml:p>
-          </ST>
-        </body>
-      </pou>
-      <pou name="FSM2_Petri" pouType="functionBlock">
-        <interface>
-          <externalVars>
-            <variable name="FSM2_CurrentTransition">
-              <type>
-                <derived name="FSM2_TTRANSITIONS"/>
-              </type>
-            </variable>
-          </externalVars>
-        </interface>
-        <body>
-          <ST>
-            <xhtml:p><![CDATA[FSM2_CurrentTransition:=FSM2_DEACTIVATED;]]></xhtml:p>
+      
+      
+          
+            
+]]></xhtml:p>
           </ST>
         </body>
       </pou>
@@ -824,25 +395,25 @@ END_IF;]]></xhtml:p>
   <instances>
     <configurations>
       <configuration name="Config0">
-        <resource name="Resources">
+        <resource name="Res0">
           <task name="task0" priority="0" interval="T#20ms">
             <pouInstance name="instance0" typeName="main"/>
           </task>
           <globalVars>
-            <variable name="CurrentStatus">
+            <variable name="FSM1_CurrentStatus">
               <type>
                 <derived name="FSM1_TSTATUS"/>
               </type>
               <initialValue>
-                <simpleValue value="STANDBY"/>
+                <simpleValue value="FSM1_ESPERA"/>
               </initialValue>
             </variable>
-            <variable name="CurrentTransition">
+            <variable name="FSM1_CurrentTransition">
               <type>
                 <derived name="FSM1_TRANSITIONS"/>
               </type>
               <initialValue>
-                <simpleValue value="DISABLE"/>
+                <simpleValue value="FSM1_DESHABILITADO"/>
               </initialValue>
             </variable>
             <variable name="FSM2_CurrentTransition">
@@ -850,10 +421,18 @@ END_IF;]]></xhtml:p>
                 <derived name="FSM2_TTRANSITIONS"/>
               </type>
               <initialValue>
-                <simpleValue value="FSM2_DEACTIVATED"/>
+                <simpleValue value="FSM2_DESHABILITADO"/>
               </initialValue>
             </variable>
-            <variable name="PalletFeederOut" address="%QX100.0">
+            <variable name="FSM2_CurrentStatus">
+              <type>
+                <derived name="FSM2_TSTATUS"/>
+              </type>
+              <initialValue>
+                <simpleValue value="FSM2_NULLL"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_BtnStart" address="%IX100.0">
               <type>
                 <BOOL/>
               </type>
@@ -861,127 +440,7 @@ END_IF;]]></xhtml:p>
                 <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
-            <variable name="LoadPalletOut" address="%QX100.1">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="ExitConveyorOut" address="%QX100.2">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="TurnOut" address="%QX100.7">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="PushOut" address="%QX101.0">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="LoadBeltOut" address="%QX101.1">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="ClampOut" address="%QX101.2">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="OpenPlateOut" address="%QX101.3">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="MoveToLimitOut" address="%QX100.3">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="ElevatorUpOut" address="%QX100.4">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="ElevatorDownOut" address="%QX100.5">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="BoxFeeder" address="%QX100.6">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="StartLightOut" address="%QX101.5">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="WarningLightOut" address="%QX101.4">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="ResetLightOut" address="%QX101.6">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="StopLightOut" address="%QX101.7">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="SensorPalletAtEntry" address="%IX100.0">
+            <variable name="FSM1_BtnStop" address="%IX100.1">
               <type>
                 <BOOL/>
               </type>
@@ -989,31 +448,7 @@ END_IF;]]></xhtml:p>
                 <simpleValue value="TRUE"/>
               </initialValue>
             </variable>
-            <variable name="SensorPalletLoaded" address="%IX100.2">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="ButtonStart" address="%IX101.0">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="ButtonReset" address="%IX101.1">
-              <type>
-                <BOOL/>
-              </type>
-              <initialValue>
-                <simpleValue value="FALSE"/>
-              </initialValue>
-            </variable>
-            <variable name="ButtonStop" address="%IX101.2">
+            <variable name="FSM1_SortingSensor1" address="%IX100.2">
               <type>
                 <BOOL/>
               </type>
@@ -1021,7 +456,7 @@ END_IF;]]></xhtml:p>
                 <simpleValue value="TRUE"/>
               </initialValue>
             </variable>
-            <variable name="SensorBoxAtEntry" address="%IX100.3">
+            <variable name="FSM1_SortingSensor2" address="%IX100.3">
               <type>
                 <BOOL/>
               </type>
@@ -1029,7 +464,7 @@ END_IF;]]></xhtml:p>
                 <simpleValue value="TRUE"/>
               </initialValue>
             </variable>
-            <variable name="SensorElevatorMoving" address="%IX100.7">
+            <variable name="FSM1_RCSorting1" address="%QX100.0">
               <type>
                 <BOOL/>
               </type>
@@ -1037,23 +472,103 @@ END_IF;]]></xhtml:p>
                 <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
-            <variable name="CounterBoxes" address="%QW100">
+            <variable name="FSM1_RCSorting2" address="%QX100.1">
               <type>
-                <INT/>
+                <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="0"/>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
-            <variable name="CounterPushes" address="%QW101">
+            <variable name="FSM1_RCSorting3" address="%QX100.2">
               <type>
-                <INT/>
+                <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="0"/>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
-            <variable name="CounterLevels" address="%QW102">
+            <variable name="FSM1_RCSorting4" address="%QX100.3">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_RCSorting5" address="%QX100.4">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_RCSorting6" address="%QX100.5">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_RCSorting7" address="%QX100.6">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_RCSorting8" address="%QX100.7">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_RCSorting9" address="%QX101.0">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_PusherSorting1" address="%QX101.1">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_PusherSorting2" address="%QX101.2">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_RcGreen" address="%QX101.3">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_RcBlue" address="%QX101.4">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_SensorVision1" address="%IW100">
               <type>
                 <INT/>
               </type>
