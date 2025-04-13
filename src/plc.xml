@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-03-16T15:34:21"/>
-  <contentHeader name="Proyecto" modificationDateTime="2025-04-13T03:38:41">
+  <contentHeader name="Proyecto" modificationDateTime="2025-04-13T06:10:43">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -56,6 +56,8 @@
               <value name="FSM2_NULLL"/>
               <value name="FSM2_VALIDANDO_TRANSACCION"/>
               <value name="FSM2_INICIANDO_SECUENCIA"/>
+              <value name="FSM2_DETECTANDO_PALLET"/>
+              <value name="FSM2_UBICANDO_PALLET"/>
             </values>
           </enum>
         </baseType>
@@ -67,6 +69,18 @@
               <value name="FSM2_DESHABILITADO"/>
               <value name="FSM2_INICIAR_SECUENCIA"/>
               <value name="FSM2_DETECTAR_PALLET"/>
+              <value name="FSM2_UBICAR_PALLET"/>
+            </values>
+          </enum>
+        </baseType>
+      </dataType>
+      <dataType name="TRANSACTIONS">
+        <baseType>
+          <enum>
+            <values>
+              <value name="SORTING_TRANSACTION"/>
+              <value name="PACKAGE_TRANSACTION"/>
+              <value name="NULL_TRANSACCTION"/>
             </values>
           </enum>
         </baseType>
@@ -86,6 +100,16 @@
                 <derived name="FSM1_Triggers"/>
               </type>
             </variable>
+            <variable name="FSM2_Petri0">
+              <type>
+                <derived name="FSM2_Petri"/>
+              </type>
+            </variable>
+            <variable name="FSM2_Triggers0">
+              <type>
+                <derived name="FSM2_Triggers"/>
+              </type>
+            </variable>
           </localVars>
         </interface>
         <body>
@@ -97,7 +121,19 @@
               <outputVariables/>
             </block>
             <block localId="5" typeName="FSM1_Triggers" instanceName="FSM1_Triggers0" width="120" height="20">
-              <position x="340" y="120"/>
+              <position x="300" y="100"/>
+              <inputVariables/>
+              <inOutVariables/>
+              <outputVariables/>
+            </block>
+            <block localId="6" typeName="FSM2_Petri" instanceName="FSM2_Petri0" width="100" height="20">
+              <position x="140" y="180"/>
+              <inputVariables/>
+              <inOutVariables/>
+              <outputVariables/>
+            </block>
+            <block localId="7" typeName="FSM2_Triggers" instanceName="FSM2_Triggers0" width="120" height="20">
+              <position x="300" y="190"/>
               <inputVariables/>
               <inOutVariables/>
               <outputVariables/>
@@ -589,7 +625,7 @@ CASE FSM1_CurrentStatus OF
 
   FSM1_ESPERANDO_DETECCION_PIEZA:
     IF SensorVision1Value = LID_GREEN OR SensorVision1Value = BASE_GREEN THEN
-      TP_Pusher1(IN := FSM1_SensorPusher1, PT := T#2s, Q => FSM1_PusherSorting1);
+      TP_Pusher1(IN := FSM1_SensorPusher1, PT := T#1s, Q => FSM1_PusherSorting1);
       FTRIG_Pusher1(CLK := TP_Pusher1.Q);
       IF FTRIG_Pusher1.Q THEN
         FSM1_CurrentTransition := FSM1_CLAMPEAR;
@@ -597,7 +633,7 @@ CASE FSM1_CurrentStatus OF
     END_IF;
 
     IF SensorVision1Value = LID_BLUE OR SensorVision1Value = BASE_BLUE THEN
-      TP_Pusher2(IN := FSM1_SensorPusher2, PT := T#2s, Q => FSM1_PusherSorting2);
+      TP_Pusher2(IN := FSM1_SensorPusher2, PT := T#1s, Q => FSM1_PusherSorting2);
       FTRIG_Pusher2(CLK := TP_Pusher2.Q);
       IF FTRIG_Pusher2.Q THEN
         FSM1_CurrentTransition := FSM1_CLAMPEAR;
@@ -642,8 +678,12 @@ CASE FSM1_CurrentStatus OF
           END_IF;
         2:
           FSM1_OutSucker1Grab := TRUE;
-          FSM1_Sucker1Z := 0;
-          FSM_Sucker1 := 3;
+          TON_Sucker1(IN := TRUE, PT := T#1s);
+          IF TON_Sucker1.Q THEN
+            TON_Sucker1(IN := FALSE);
+            FSM1_Sucker1Z := 0;  
+            FSM_Sucker1 := 3;
+          END_IF;         
         3:
           FSM_Sucker1:=0;
           FSM1_CurrentTransition := FSM1_RECOGER_CAJA_SUCCIONADOR2;
@@ -667,9 +707,12 @@ CASE FSM1_CurrentStatus OF
             FSM_Sucker1 := 2;
           END_IF;
         2:
-          FSM1_OutSucker1Grab := TRUE;
-          FSM1_Sucker1Z := 0;
-          FSM_Sucker1 := 3;
+          FSM1_OutSucker1Grab := TRUE;TON_Sucker1(IN := TRUE, PT := T#1s);
+          IF TON_Sucker1.Q THEN
+            TON_Sucker1(IN := FALSE);
+            FSM1_Sucker1Z := 0;  
+            FSM_Sucker1 := 3;
+          END_IF;        
         3:
           FSM_Sucker1:=0;
           FSM1_CurrentTransition := FSM1_RECOGER_CAJA_SUCCIONADOR2;
@@ -755,8 +798,8 @@ CASE FSM1_CurrentStatus OF
           FSM_Sucker1B:=4;
         END_IF;
       4:
-        TON_Sucker1(IN:= TRUE, PT:= T#1s);
-        IF TON_Sucker1.Q THEN
+        TON_Sucker1(IN:= TRUE, PT:= T#1s);
+        IF TON_Sucker1.Q THEN
           TON_Sucker1(IN:=FALSE);
           FSM1_Sucker1X:=0;
           FSM1_Sucker1Y:=0;
@@ -769,6 +812,224 @@ CASE FSM1_CurrentStatus OF
     END_CASE;
 END_CASE;
 ]]></xhtml:p>
+          </ST>
+        </body>
+      </pou>
+      <pou name="FSM2_Petri" pouType="functionBlock">
+        <interface>
+          <externalVars>
+            <variable name="FSM2_CurrentTransition">
+              <type>
+                <derived name="FSM2_TTRANSITIONS"/>
+              </type>
+            </variable>
+            <variable name="FSM2_CurrentStatus">
+              <type>
+                <derived name="FSM2_TSTATUS"/>
+              </type>
+            </variable>
+          </externalVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml:p><![CDATA[(*Red FSM1_Petri*)
+IF FSM2_CurrentTransition = FSM2_INICIAR_SECUENCIA
+  THEN
+    FSM2_CurrentStatus:=FSM2_INICIANDO_SECUENCIA;
+END_IF;
+
+IF FSM2_CurrentTransition = FSM2_DETECTAR_PALLET
+  THEN
+    FSM2_CurrentStatus:=FSM2_DETECTANDO_PALLET;
+END_IF;
+
+IF FSM2_CurrentTransition = FSM2_UBICAR_PALLET
+  THEN
+    FSM2_CurrentStatus:=FSM2_UBICANDO_PALLET;
+END_IF;
+
+
+]]></xhtml:p>
+          </ST>
+        </body>
+      </pou>
+      <pou name="FSM2_Triggers" pouType="functionBlock">
+        <interface>
+          <externalVars>
+            <variable name="FSM2_CurrentTransition">
+              <type>
+                <derived name="FSM2_TTRANSITIONS"/>
+              </type>
+            </variable>
+            <variable name="FSM2_CurrentStatus">
+              <type>
+                <derived name="FSM2_TSTATUS"/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="FSM2_FTrigStop">
+              <type>
+                <derived name="F_TRIG"/>
+              </type>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM2_BtnStop">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM2_OutRCTurn">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM2_OutRCTurnLeft">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM2_OutRC1">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM2_OutRC2">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM2_OutLoading">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_COMPLETE">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_OutRCPalletExit">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM2_SensorRCTurnLimit">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM2_SensorEntry">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="FSM_Entry">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM1_SensorComplete">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="FTRIG_SensorComplete">
+              <type>
+                <derived name="F_TRIG"/>
+              </type>
+            </variable>
+            <variable name="FSM2_SORTING_PRIORITY">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="TRUE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_CurrentTransaction">
+              <type>
+                <derived name="TRANSACTIONS"/>
+              </type>
+              <initialValue>
+                <simpleValue value="NULL_TRANSACCTION"/>
+              </initialValue>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM3_COMPLETE">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml:p><![CDATA[FSM2_FTrigStop(
+  CLK := FSM2_BtnStop
+);
+
+IF FSM2_FTrigStop.Q THEN
+  FSM2_CurrentTransition := FSM2_DESHABILITADO;
+  FSM2_CurrentStatus := FSM2_VALIDANDO_TRANSACCION;
+  FSM2_OutRCTurn:=FALSE;
+  FSM2_OutRCTurnLeft:=FALSE;
+  FSM2_OutRC1:=FALSE;
+  FSM2_OutRC2:=FALSE;
+  FSM2_OutLoading:=FALSE;
+END_IF;
+
+CASE FSM2_CurrentStatus OF
+  FSM2_VALIDANDO_TRANSACCION:
+    IF FSM1_COMPLETE AND FSM2_SORTING_PRIORITY THEN
+      FSM2_CurrentTransaction:= SORTING_TRANSACTION;
+      FSM2_CurrentTransition:= FSM2_INICIAR_SECUENCIA;
+    ELSIF FSM3_COMPLETE THEN
+      FSM2_CurrentTransaction:= PACKAGE_TRANSACTION;
+      FSM2_CurrentTransition:= FSM2_INICIAR_SECUENCIA;
+    ELSIF NOT FSM3_COMPLETE AND NOT FSM2_SORTING_PRIORITY THEN
+      FSM2_SORTING_PRIORITY:=TRUE;
+    END_IF;
+    
+  FSM2_INICIANDO_SECUENCIA:
+    IF FSM2_CurrentTransaction = SORTING_TRANSACTION THEN
+          FSM2_OutRCTurn:=FALSE;
+          FSM2_OutRCTurnLeft:=TRUE;
+          FSM2_OutRC1:=TRUE;
+          FSM2_OutRC2:=TRUE;
+          FSM2_OutLoading:=TRUE;
+          FSM1_OutRCPalletExit:=TRUE;
+          FTRIG_SensorComplete( CLK:= FSM1_SensorComplete);
+          IF FTRIG_SensorComplete.Q  THEN
+              FSM1_OutRCPalletExit:=FALSE;
+              FSM1_COMPLETE:=FALSE;
+            FSM2_CurrentTransition:=FSM2_DETECTAR_PALLET;
+          END_IF;
+    END_IF;
+      
+    FSM2_DETECTANDO_PALLET:
+      IF FSM2_SensorEntry THEN
+        FSM2_OutRCTurn:=FALSE;
+        FSM2_OutRCTurnLeft:=FALSE;
+        FSM2_OutRC1:=FALSE;
+        FSM2_OutRC2:=FALSE;
+        FSM2_OutLoading:=FALSE;
+        FSM2_CurrentTransition:=FSM2_UBICAR_PALLET;
+      END_IF;      
+      
+
+END_CASE;]]></xhtml:p>
           </ST>
         </body>
       </pou>
@@ -879,6 +1140,46 @@ END_CASE;
               </initialValue>
             </variable>
             <variable name="FSM1_SensorPalletWithBox" address="%IX101.0">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_BtnStart" address="%IX101.1">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_BtnStop" address="%IX101.2">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="TRUE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_SensorRCTurnLimit" address="%IX101.3">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_SensorEntry" address="%IX101.4">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_SensorComplete" address="%IX101.5">
               <type>
                 <BOOL/>
               </type>
@@ -1062,6 +1363,46 @@ END_CASE;
                 <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
+            <variable name="FSM2_OutRCTurn" address="%QX102.6">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_OutRCTurnLeft" address="%QX102.7">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_OutRC1" address="%QX103.0">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_OutRC2" address="%QX103.1">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_OutLoading" address="%QX103.2">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
             <variable name="FSM1_SensorVision1" address="%IW100">
               <type>
                 <INT/>
@@ -1135,6 +1476,14 @@ END_CASE;
               </initialValue>
             </variable>
             <variable name="FSM1_COMPLETE">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM3_COMPLETE">
               <type>
                 <BOOL/>
               </type>
