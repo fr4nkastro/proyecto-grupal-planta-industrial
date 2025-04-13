@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-03-16T15:34:21"/>
-  <contentHeader name="Proyecto" modificationDateTime="2025-04-12T18:43:47">
+  <contentHeader name="Proyecto" modificationDateTime="2025-04-12T20:39:13">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -26,6 +26,7 @@
               <value name="FSM1_ESPERANDO_DETECCION_PIEZA"/>
               <value name="FSM1_CLAMPEANDO"/>
               <value name="FSM1_RECOGIENDO_PIEZA_SUCCIONADOR1"/>
+              <value name="FSM1_RECOGIENDO_CAJA_SUCCIONADOR2"/>
             </values>
           </enum>
         </baseType>
@@ -40,6 +41,7 @@
               <value name="FSM1_DETECTAR_PIEZA_EMPUJAR"/>
               <value name="FSM1_CLAMPEAR"/>
               <value name="FSM1_RECOGER_PIEZA_SUCCIONADOR1"/>
+              <value name="FSM1_RECOGER_CAJA_SUCCIONADOR2"/>
             </values>
           </enum>
         </baseType>
@@ -142,7 +144,11 @@ IF FSM1_CurrentTransition = FSM1_RECOGER_PIEZA_SUCCIONADOR1
   THEN
       FSM1_CurrentStatus:=FSM1_RECOGIENDO_PIEZA_SUCCIONADOR1;
 END_IF;
-]]></xhtml:p>
+
+IF FSM1_CurrentTransition = FSM1_RECOGER_CAJA_SUCCIONADOR2
+  THEN
+      FSM1_CurrentStatus:=FSM1_RECOGIENDO_CAJA_SUCCIONADOR2;
+END_IF;]]></xhtml:p>
           </ST>
         </body>
       </pou>
@@ -372,6 +378,45 @@ END_IF;
               </type>
             </variable>
           </localVars>
+          <externalVars>
+            <variable name="FSM1_Sucker1X">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="FSM1_Sucker1Y">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="FSM1_Sucker1Z">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="TON_Sucker1">
+              <type>
+                <derived name="TON"/>
+              </type>
+            </variable>
+            <variable name="FSM_Sucker1">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM1_OutSucker1Grab">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
         </interface>
         <body>
           <ST>
@@ -395,6 +440,10 @@ IF FSM1_FTrigStop.Q THEN
   FSM1_RCSorting9:=FALSE;
   FSM1_RCGreen:=FALSE;
   FSM1_RCBlue:=FALSE;
+  FSM1_OutSucker1Grab := FALSE;
+  FSM1_Sucker1Z := 0;
+  FSM1_Sucker1Y := 0;
+  FSM1_Sucker1X := 0;
 END_IF;
 
 IF FSM1_CurrentStatus = FSM1_ESPERA
@@ -513,9 +562,70 @@ IF FSM1_CurrentStatus = FSM1_CLAMPEANDO
         FSM1_CurrentTransition:=FSM1_RECOGER_PIEZA_SUCCIONADOR1;
       END_IF;
   END_IF;
+END_IF;
+
+IF FSM1_CurrentStatus = FSM1_RECOGIENDO_PIEZA_SUCCIONADOR1
+  THEN
+  IF  SensorVision1Value = LID_BLUE OR 
+          SensorVision1Value = BASE_BLUE
+    THEN
+    CASE FSM_Sucker1 OF
+      0:(*Primer paso*) 
+        FSM1_Sucker1Z := 8;
+        TON_Sucker1(IN := TRUE, PT := T#2s); 
+        IF TON_Sucker1.Q THEN
+          TON_Sucker1(IN := FALSE); 
+          FSM_Sucker1:= 1;
+        END_IF;
+
+      1:(*Segundo paso*)
+        FSM1_Sucker1X := 1;
+        TON_Sucker1(IN := TRUE, PT := T#2s); 
+        IF TON_Sucker1.Q THEN
+          TON_Sucker1(IN := FALSE);
+          FSM_Sucker1:= 2;
+        END_IF;
+
+      2: (*Activar succión*)
+        FSM1_OutSucker1Grab := TRUE;
+        FSM1_Sucker1Z := 0;
+        FSM_Sucker1:= 3;
+        
+      3: (*Fin o esperar nueva orden*)
+        FSM1_CurrentTransition:=FSM1_RECOGER_CAJA_SUCCIONADOR2;
+    END_CASE;
+  END_IF;
   
-  
-  
+    IF  SensorVision1Value = LID_GREEN OR 
+          SensorVision1Value = BASE_GREEN
+      THEN
+        CASE FSM_Sucker1 OF
+        0:(*Primer paso*) 
+          FSM1_Sucker1X := 8;
+          TON_Sucker1(IN := TRUE, PT := T#2s); 
+          IF TON_Sucker1.Q THEN
+            TON_Sucker1(IN := FALSE); 
+            FSM_Sucker1:= 1;
+          END_IF;
+
+        1:(*Segundo paso*)
+          FSM1_Sucker1Z := 8;
+          TON_Sucker1(IN := TRUE, PT := T#2s); 
+          IF TON_Sucker1.Q THEN
+            TON_Sucker1(IN := FALSE);
+            FSM_Sucker1:= 2;
+          END_IF;
+
+        2: (*Activar succión*)
+          FSM1_OutSucker1Grab := TRUE;
+          FSM1_Sucker1Z := 0;
+          FSM_Sucker1:= 3;
+          
+        3: (*Fin o esperar nueva orden*)
+          FSM1_CurrentTransition:=FSM1_RECOGER_CAJA_SUCCIONADOR2;
+      END_CASE;
+    END_IF;
+      
 END_IF;
       
       
@@ -735,6 +845,14 @@ END_IF;
                 <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
+            <variable name="FSM1_OutSucker1Grab" address="%QX101.7">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
             <variable name="FSM1_SensorVision1" address="%IW100">
               <type>
                 <INT/>
@@ -744,6 +862,30 @@ END_IF;
               </initialValue>
             </variable>
             <variable name="FSM1_SensorVision2" address="%IW101">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_Sucker1X" address="%QW100">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_Sucker1Y" address="%QW101">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_Sucker1Z" address="%QW102">
               <type>
                 <INT/>
               </type>
