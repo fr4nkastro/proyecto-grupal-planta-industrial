@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-03-16T15:34:21"/>
-  <contentHeader name="Proyecto" modificationDateTime="2025-04-12T18:43:47">
+  <contentHeader name="Proyecto" modificationDateTime="2025-04-13T03:38:41">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -26,6 +26,8 @@
               <value name="FSM1_ESPERANDO_DETECCION_PIEZA"/>
               <value name="FSM1_CLAMPEANDO"/>
               <value name="FSM1_RECOGIENDO_PIEZA_SUCCIONADOR1"/>
+              <value name="FSM1_RECOGIENDO_CAJA_SUCCIONADOR2"/>
+              <value name="FSM1_VACIANDO_SUCCIONADOR1"/>
             </values>
           </enum>
         </baseType>
@@ -40,6 +42,9 @@
               <value name="FSM1_DETECTAR_PIEZA_EMPUJAR"/>
               <value name="FSM1_CLAMPEAR"/>
               <value name="FSM1_RECOGER_PIEZA_SUCCIONADOR1"/>
+              <value name="FSM1_RECOGER_CAJA_SUCCIONADOR2"/>
+              <value name="FSM1_VACIAR_SUCCIONADOR1"/>
+              <value name="FSM1_REINICIAR"/>
             </values>
           </enum>
         </baseType>
@@ -142,7 +147,22 @@ IF FSM1_CurrentTransition = FSM1_RECOGER_PIEZA_SUCCIONADOR1
   THEN
       FSM1_CurrentStatus:=FSM1_RECOGIENDO_PIEZA_SUCCIONADOR1;
 END_IF;
-]]></xhtml:p>
+
+IF FSM1_CurrentTransition = FSM1_RECOGER_CAJA_SUCCIONADOR2
+  THEN
+      FSM1_CurrentStatus:=FSM1_RECOGIENDO_CAJA_SUCCIONADOR2;
+END_IF;
+
+
+IF FSM1_CurrentTransition = FSM1_VACIAR_SUCCIONADOR1
+  THEN
+      FSM1_CurrentStatus:=FSM1_VACIANDO_SUCCIONADOR1;
+END_IF;
+
+IF FSM1_CurrentTransition = FSM1_REINICIAR
+  THEN
+      FSM1_CurrentStatus:=FSM1_ESPERA;
+END_IF;]]></xhtml:p>
           </ST>
         </body>
       </pou>
@@ -372,155 +392,382 @@ END_IF;
               </type>
             </variable>
           </localVars>
+          <externalVars>
+            <variable name="FSM1_Sucker1X">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="FSM1_Sucker1Y">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="FSM1_Sucker1Z">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="TON_Sucker1">
+              <type>
+                <derived name="TON"/>
+              </type>
+            </variable>
+            <variable name="FSM_Sucker1">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM_Sucker2">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM_Sucker1B">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM1_OutSucker1Grab">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_OutRCStackableBox">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_SensorStackableBox">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_SensorPallet">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_OutRCPalletEntry">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_OutRCPalletExit">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_OutSucker2X">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_OutSucker2Z">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="TON_Sucker2">
+              <type>
+                <derived name="TON"/>
+              </type>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM1_OutSucker2Grab">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_COMPLETE">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="FSM1_RESET">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM1_SensorPalletWithBox">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
         </interface>
         <body>
           <ST>
             <xhtml:p><![CDATA[FSM1_FTrigStop(
-
-     CLK := FSM1_BtnStop
+  CLK := FSM1_BtnStop
 );
 
 IF FSM1_FTrigStop.Q THEN
-  FSM1_CurrentTransition:=FSM1_DESHABILITADO;
-  FSM1_CurrentStatus:= FSM1_ESPERA;
-  SensorVision1Value:=0;
-  FSM1_RCSorting1:=FALSE;
-  FSM1_RCSorting2:=FALSE;
-  FSM1_RCSorting3:=FALSE;
-  FSM1_RCSorting4:=FALSE;
-  FSM1_RCSorting5:=FALSE;
-  FSM1_RCSorting6:=FALSE;
-  FSM1_RCSorting7:=FALSE;
-  FSM1_RCSorting8:=FALSE;
-  FSM1_RCSorting9:=FALSE;
-  FSM1_RCGreen:=FALSE;
-  FSM1_RCBlue:=FALSE;
+  FSM1_CurrentTransition := FSM1_DESHABILITADO;
+  FSM1_CurrentStatus := FSM1_ESPERA;
+  SensorVision1Value := 0;
+  FSM1_RCSorting1 := FALSE;
+  FSM1_RCSorting2 := FALSE;
+  FSM1_RCSorting3 := FALSE;
+  FSM1_RCSorting4 := FALSE;
+  FSM1_RCSorting5 := FALSE;
+  FSM1_RCSorting6 := FALSE;
+  FSM1_RCSorting7 := FALSE;
+  FSM1_RCSorting8 := FALSE;
+  FSM1_RCSorting9 := FALSE;
+  FSM1_RCGreen := FALSE;
+  FSM1_RCBlue := FALSE;
+  FSM1_OutSucker1Grab := FALSE;
+  FSM1_Sucker1Z := 0;
+  FSM1_Sucker1Y := 0;
+  FSM1_Sucker1X := 0;
+  FSM_Sucker1 := 0;
+  FSM_Sucker2 := 0;
+  FSM_Sucker1B:=0;
+  FSM1_OutSucker2Z := FALSE;
+  FSM1_OutSucker2X := FALSE;
+  FSM1_OutSucker2Grab := FALSE;
+  FSM1_COMPLETE:=FALSE;
+  FSM1_RESET:=FALSE;
 END_IF;
 
-IF FSM1_CurrentStatus = FSM1_ESPERA
-  THEN
-  IF FSM1_BtnStart
-    THEN
-      FSM1_CurrentTransition:= FSM1_INICIAR;
-  END_IF;
-END_IF;
+CASE FSM1_CurrentStatus OF
 
-IF FSM1_CurrentStatus = FSM1_ARRANCANDO_BANDAS
-  THEN
-      FSM1_RCSorting1:=TRUE;
-      FSM1_RCSorting2:=TRUE;
-      FSM1_RCSorting3:=TRUE;
-      FSM1_RCSorting4:=TRUE;
-      FSM1_RCSorting5:=TRUE;
-      FSM1_RCSorting6:=TRUE;
-      FSM1_RCSorting7:=TRUE;
-      FSM1_RCSorting8:=TRUE;
-      FSM1_RCSorting9:=TRUE;
-      FSM1_RCGreen:=TRUE;
-      FSM1_RCBlue:=TRUE;
-      SensorVision1Value:=0;
-      FSM1_CurrentTransition:=FSM1_CLASIFICAR_CAJAS_COLOR;
-END_IF;
+  FSM1_ESPERA:
+    IF (FSM1_BtnStart AND NOT FSM1_COMPLETE )  THEN
+      FSM1_CurrentTransition := FSM1_INICIAR;
+    END_IF;
+    IF (FSM1_RESET AND NOT FSM1_COMPLETE )  THEN
+      FSM1_RESET:=FALSE;
+      FSM1_CurrentTransition := FSM1_INICIAR;
+    END_IF;
+    
 
-IF FSM1_CurrentStatus = FSM1_ESPERANDO_CLASIFICACION 
-  THEN
+  FSM1_ARRANCANDO_BANDAS:
+    FSM1_RCSorting1 := TRUE;
+    FSM1_RCSorting2 := TRUE;
+    FSM1_RCSorting3 := TRUE;
+    FSM1_RCSorting4 := TRUE;
+    FSM1_RCSorting5 := TRUE;
+    FSM1_RCSorting6 := TRUE;
+    FSM1_RCSorting7 := TRUE;
+    FSM1_RCSorting8 := TRUE;
+    FSM1_RCSorting9 := TRUE;
+    FSM1_RCGreen := TRUE;
+    FSM1_RCBlue := TRUE;
+    SensorVision1Value := 0;
+    FSM1_CurrentTransition := FSM1_CLASIFICAR_CAJAS_COLOR;
+
+  FSM1_ESPERANDO_CLASIFICACION:
     IF FSM1_SensorVision1 > 0 THEN
-      SensorVision1Value:= FSM1_SensorVision1;    
+      SensorVision1Value := FSM1_SensorVision1;
       FSM1_CurrentTransition := FSM1_DETECTAR_PIEZA_EMPUJAR;
     END_IF;
-END_IF;
 
-IF FSM1_CurrentStatus =FSM1_ESPERANDO_DETECCION_PIEZA 
-    THEN
-      IF  SensorVision1Value = LID_GREEN OR 
-          SensorVision1Value = BASE_GREEN
-      THEN
-        TP_Pusher1(
-         IN := FSM1_SensorPusher1,
-         PT := T#2s,
-         Q => FSM1_PusherSorting1
-        );
-        FTRIG_Pusher1(
-            CLK := TP_Pusher1.Q
-          );
-        IF FTRIG_Pusher1.Q 
-
-          THEN
-
-           FSM1_CurrentTransition := FSM1_CLAMPEAR;
-
-        END_IF;
+  FSM1_ESPERANDO_DETECCION_PIEZA:
+    IF SensorVision1Value = LID_GREEN OR SensorVision1Value = BASE_GREEN THEN
+      TP_Pusher1(IN := FSM1_SensorPusher1, PT := T#2s, Q => FSM1_PusherSorting1);
+      FTRIG_Pusher1(CLK := TP_Pusher1.Q);
+      IF FTRIG_Pusher1.Q THEN
+        FSM1_CurrentTransition := FSM1_CLAMPEAR;
       END_IF;
-      
-      IF  SensorVision1Value = LID_BLUE OR 
-          SensorVision1Value = BASE_BLUE
-        THEN
-          TP_Pusher2(
-           IN := FSM1_SensorPusher2,
-           PT := T#2s,
-           Q => FSM1_PusherSorting2
-          );
-          FTRIG_Pusher2(
-            CLK:= TP_Pusher2.Q
-          );
-          IF FTRIG_Pusher2.Q 
-            THEN
-            FSM1_CurrentTransition := FSM1_CLAMPEAR;
+    END_IF;
+
+    IF SensorVision1Value = LID_BLUE OR SensorVision1Value = BASE_BLUE THEN
+      TP_Pusher2(IN := FSM1_SensorPusher2, PT := T#2s, Q => FSM1_PusherSorting2);
+      FTRIG_Pusher2(CLK := TP_Pusher2.Q);
+      IF FTRIG_Pusher2.Q THEN
+        FSM1_CurrentTransition := FSM1_CLAMPEAR;
+      END_IF;
+    END_IF;
+
+  FSM1_CLAMPEANDO:
+    IF SensorVision1Value = LID_BLUE OR SensorVision1Value = BASE_BLUE THEN
+      FTRIG_SensorClampBlue(CLK := FSM1_SensorClampBlue);
+      TP_ClampBlue(IN := FTRIG_SensorClampBlue.Q, PT := T#1s, Q => FSM1_OutClampBlue);
+      FTRIG_ClampBlue(CLK := TP_ClampBlue.Q);
+      IF FTRIG_ClampBlue.Q THEN
+        FSM1_CurrentTransition := FSM1_RECOGER_PIEZA_SUCCIONADOR1;
+      END_IF;
+    END_IF;
+
+    IF SensorVision1Value = LID_GREEN OR SensorVision1Value = BASE_GREEN THEN
+      FTRIG_SensorClampGreen(CLK := FSM1_SensorClampGreen);
+      TP_ClampGreen(IN := FTRIG_SensorClampGreen.Q, PT := T#1s, Q => FSM1_OutClampGreen);
+      FTRIG_ClampGreen(CLK := TP_ClampGreen.Q);
+      IF FTRIG_ClampGreen.Q THEN
+        FSM1_CurrentTransition := FSM1_RECOGER_PIEZA_SUCCIONADOR1;
+      END_IF;
+    END_IF;
+
+  FSM1_RECOGIENDO_PIEZA_SUCCIONADOR1:
+    IF SensorVision1Value = LID_BLUE OR SensorVision1Value = BASE_BLUE THEN
+      CASE FSM_Sucker1 OF
+        0:
+          FSM1_Sucker1Z := 8;
+          TON_Sucker1(IN := TRUE, PT := T#1s);
+          IF TON_Sucker1.Q THEN
+            TON_Sucker1(IN := FALSE);
+            FSM_Sucker1 := 1;
           END_IF;
-      END_IF;
-      
-END_IF;
+        1:
+          FSM1_Sucker1X := 1;
+          TON_Sucker1(IN := TRUE, PT := T#2s);
+          IF TON_Sucker1.Q THEN
+            TON_Sucker1(IN := FALSE);
+            FSM_Sucker1 := 2;
+          END_IF;
+        2:
+          FSM1_OutSucker1Grab := TRUE;
+          FSM1_Sucker1Z := 0;
+          FSM_Sucker1 := 3;
+        3:
+          FSM_Sucker1:=0;
+          FSM1_CurrentTransition := FSM1_RECOGER_CAJA_SUCCIONADOR2;
+      END_CASE;
+    END_IF;
 
-
-IF FSM1_CurrentStatus = FSM1_CLAMPEANDO 
-  THEN
-    IF  SensorVision1Value = LID_BLUE OR 
-          SensorVision1Value = BASE_BLUE
-      THEN
-      (*Detectar cuando la pieza ha pasado por completo el sensor*)
-      FTRIG_SensorClampBlue(
-         CLK := FSM1_SensorClampBlue
-      );
-      TP_ClampBlue(
-         IN := FTRIG_SensorClampBlue.Q ,
-         PT := T#1s,
-         Q => FSM1_OutClampBlue
-       );
-      FTRIG_ClampBlue(
-        CLK := TP_ClampBlue.Q
-       );
-      IF FTRIG_ClampBlue.Q THEN
-        FSM1_CurrentTransition:=FSM1_RECOGER_PIEZA_SUCCIONADOR1;
-      END_IF;
-  END_IF;
-  
-  IF  SensorVision1Value = LID_GREEN OR 
-          SensorVision1Value = BASE_GREEN
-    THEN
-      (*Detectar cuando la pieza ha pasado por completo el sensor*)
-      FTRIG_SensorClampGreen(
-         CLK := FSM1_SensorClampGreen
-      );
-      TP_ClampGreen(
-         IN := FTRIG_SensorClampGreen.Q ,
-         PT := T#1s,
-         Q => FSM1_OutClampGreen
-       );
-      FTRIG_ClampGreen(
-        CLK := TP_ClampGreen.Q
-       );
-      IF FTRIG_ClampGreen.Q THEN
-        FSM1_CurrentTransition:=FSM1_RECOGER_PIEZA_SUCCIONADOR1;
-      END_IF;
-  END_IF;
-  
-  
-  
-END_IF;
-      
-      
+    IF SensorVision1Value = LID_GREEN OR SensorVision1Value = BASE_GREEN THEN
+      CASE FSM_Sucker1 OF
+        0:
+          FSM1_Sucker1X := 8;
+          TON_Sucker1(IN := TRUE, PT := T#1s);
+          IF TON_Sucker1.Q THEN
+            TON_Sucker1(IN := FALSE);
+            FSM_Sucker1 := 1;
+          END_IF;
+        1:
+          FSM1_Sucker1Z := 8;
+          TON_Sucker1(IN := TRUE, PT := T#2s);
+          IF TON_Sucker1.Q THEN
+            TON_Sucker1(IN := FALSE);
+            FSM_Sucker1 := 2;
+          END_IF;
+        2:
+          FSM1_OutSucker1Grab := TRUE;
+          FSM1_Sucker1Z := 0;
+          FSM_Sucker1 := 3;
+        3:
+          FSM_Sucker1:=0;
+          FSM1_CurrentTransition := FSM1_RECOGER_CAJA_SUCCIONADOR2;
+      END_CASE;
+    END_IF;
+    
+  FSM1_RECOGIENDO_CAJA_SUCCIONADOR2:
+     CASE FSM_Sucker2 OF
+      0:
+        FSM1_OutRCStackableBox:=TRUE;
+        FSM_Sucker2:=1;
+      1:
+        IF FSM1_SensorStackableBox THEN
+            FSM1_OutRCStackableBox:=FALSE;
+            FSM_Sucker2:=2;
+        END_IF;
+      2:
+        FSM1_OutSucker2X:=TRUE;
+        TON_Sucker2(IN := TRUE, PT := T#1s);
+        IF TON_Sucker2.Q THEN
+          TON_Sucker2(IN:= FALSE);
+          FSM1_OutSucker2Z:=TRUE;
+          FSM_Sucker2:=3;
+        END_IF;
           
-            
+      3:(*Succión*)
+        TON_Sucker2(IN := TRUE, PT := T#1s);
+        IF TON_Sucker2.Q THEN
+          TON_Sucker2(IN:= FALSE);
+          FSM1_OutSucker2Grab:=TRUE;
+          FSM1_OutSucker2X:=FALSE;
+          FSM1_OutRCPalletEntry:=TRUE;
+          FSM1_OutRCPalletExit:=TRUE;
+          FSM_Sucker2:=4;
+        END_IF;
+      4:
+        IF FSM1_SensorPallet THEN
+              FSM1_OutRCPalletEntry:=FALSE;
+              FSM1_OutRCPalletExit:=FALSE;
+              FSM_Sucker2:=5;
+        END_IF;
+      5:
+        TON_Sucker2(IN := TRUE, PT := T#1s);
+        IF TON_Sucker2.Q THEN
+          TON_Sucker2(IN := FALSE);
+          FSM1_OutSucker2Grab:=FALSE;
+          FSM1_OutSucker2Z:=FALSE;
+          FSM_Sucker2:=0;
+          FSM1_CurrentTransition:=FSM1_VACIAR_SUCCIONADOR1;
+        END_IF;
+      END_CASE;
+      
+  FSM1_VACIANDO_SUCCIONADOR1:
+    CASE FSM_Sucker1B OF
+      0:
+        FSM1_OutRCPalletExit:=TRUE;
+        IF FSM1_SensorPalletWithBox THEN
+          FSM1_OutRCPalletExit:= FALSE;
+          FSM_Sucker1B:=1;
+        END_IF;
+      1:
+        FSM1_Sucker1Z:=0;
+        TON_Sucker1(IN:= TRUE, PT:= T#1s);
+        IF TON_Sucker1.Q THEN
+          TON_Sucker1(IN:=FALSE);
+          FSM1_Sucker1Y:=7;
+          FSM1_Sucker1X:=5;
+          FSM_Sucker1B:=2;
+        END_IF;
+      2:
+        TON_Sucker1(IN:= TRUE, PT:= T#1s);
+        IF TON_Sucker1.Q THEN
+          TON_Sucker1(IN:= FALSE);
+          FSM1_Sucker1Z:=10;
+          FSM1_OutSucker1Grab:=FALSE;
+          FSM_Sucker1B:=3;
+        END_IF;    
+      3:
+        TON_Sucker1(IN:= TRUE, PT:= T#1s);
+        IF TON_Sucker1.Q THEN
+          TON_Sucker1(IN:=FALSE);
+          FSM1_Sucker1Z:=0;
+          FSM_Sucker1B:=4;
+        END_IF;
+      4:
+        TON_Sucker1(IN:= TRUE, PT:= T#1s);
+        IF TON_Sucker1.Q THEN
+          TON_Sucker1(IN:=FALSE);
+          FSM1_Sucker1X:=0;
+          FSM1_Sucker1Y:=0;
+          FSM1_COMPLETE:=TRUE;
+          FSM1_RESET:=TRUE;
+          FSM_Sucker1B:=0;
+          FSM1_CurrentTransition:=FSM1_REINICIAR;
+        END_IF;
+        
+    END_CASE;
+END_CASE;
 ]]></xhtml:p>
           </ST>
         </body>
@@ -588,7 +835,7 @@ END_IF;
                 <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="TRUE"/>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
             <variable name="FSM1_SensorPusher2" address="%IX100.3">
@@ -596,7 +843,7 @@ END_IF;
                 <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="TRUE"/>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
             <variable name="FSM1_SensorClampBlue" address="%IX100.4">
@@ -604,7 +851,7 @@ END_IF;
                 <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="TRUE"/>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
             <variable name="FSM1_SensorClampGreen" address="%IX100.5">
@@ -612,7 +859,31 @@ END_IF;
                 <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="TRUE"/>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_SensorStackableBox" address="%IX100.6">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_SensorPallet" address="%IX100.7">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_SensorPalletWithBox" address="%IX101.0">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
             <variable name="FSM1_RCSorting1" address="%QX100.0">
@@ -735,6 +1006,62 @@ END_IF;
                 <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
+            <variable name="FSM1_OutSucker1Grab" address="%QX101.7">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_OutRCStackableBox" address="%QX102.0">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_OutRCPalletEntry" address="%QX102.1">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_OutSucker2X" address="%QX102.2">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_OutSucker2Z" address="%QX102.3">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_OutSucker2Grab" address="%QX102.4">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_OutRCPalletExit" address="%QX102.5">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
             <variable name="FSM1_SensorVision1" address="%IW100">
               <type>
                 <INT/>
@@ -744,6 +1071,30 @@ END_IF;
               </initialValue>
             </variable>
             <variable name="FSM1_SensorVision2" address="%IW101">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_Sucker1X" address="%QW100">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_Sucker1Y" address="%QW101">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_Sucker1Z" address="%QW102">
               <type>
                 <INT/>
               </type>
@@ -781,6 +1132,14 @@ END_IF;
               </type>
               <initialValue>
                 <simpleValue value="2"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_COMPLETE">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
           </globalVars>
