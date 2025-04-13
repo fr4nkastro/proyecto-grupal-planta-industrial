@@ -1,8 +1,8 @@
 TYPE
   FSM1_TSTATUS : (FSM1_ESPERA, FSM1_ARRANCANDO_BANDAS, FSM1_ESPERANDO_CLASIFICACION, FSM1_ESPERANDO_DETECCION_PIEZA, FSM1_CLAMPEANDO, FSM1_RECOGIENDO_PIEZA_SUCCIONADOR1, FSM1_RECOGIENDO_CAJA_SUCCIONADOR2, FSM1_VACIANDO_SUCCIONADOR1);
   FSM1_TRANSITIONS : (FSM1_INICIAR, FSM1_DESHABILITADO, FSM1_CLASIFICAR_CAJAS_COLOR, FSM1_DETECTAR_PIEZA_EMPUJAR, FSM1_CLAMPEAR, FSM1_RECOGER_PIEZA_SUCCIONADOR1, FSM1_RECOGER_CAJA_SUCCIONADOR2, FSM1_VACIAR_SUCCIONADOR1, FSM1_REINICIAR);
-  FSM2_TSTATUS : (FSM2_NULLL, FSM2_VALIDANDO_TRANSACCION, FSM2_INICIANDO_SECUENCIA, FSM2_DETECTANDO_PALLET, FSM2_UBICANDO_PALLET);
-  FSM2_TTRANSITIONS : (FSM2_DESHABILITADO, FSM2_INICIAR_SECUENCIA, FSM2_DETECTAR_PALLET, FSM2_UBICAR_PALLET);
+  FSM2_TSTATUS : (FSM2_NULLL, FSM2_VALIDANDO_TRANSACCION, FSM2_INICIANDO_SECUENCIA, FSM2_DETECTANDO_PALLET, FSM2_UBICANDO_PALLET, FSM2_DEPOSITANDO_PALLET);
+  FSM2_TTRANSITIONS : (FSM2_DESHABILITADO, FSM2_INICIAR_SECUENCIA, FSM2_DETECTAR_PALLET, FSM2_UBICAR_PALLET, FSM2_DEPOSITAR_PALLET);
   TRANSACTIONS : (SORTING_TRANSACTION, PACKAGE_TRANSACTION, NULL_TRANSACCTION);
 END_TYPE
 
@@ -269,7 +269,7 @@ FUNCTION_BLOCK FSM1_Triggers
             END_IF;
           1:
             FSM1_Sucker1X := 1;
-            TON_Sucker1(IN := TRUE, PT := T#2s);
+            TON_Sucker1(IN := TRUE, PT := T#1s);
             IF TON_Sucker1.Q THEN
               TON_Sucker1(IN := FALSE);
               FSM_Sucker1 := 2;
@@ -299,7 +299,7 @@ FUNCTION_BLOCK FSM1_Triggers
             END_IF;
           1:
             FSM1_Sucker1Z := 8;
-            TON_Sucker1(IN := TRUE, PT := T#2s);
+            TON_Sucker1(IN := TRUE, PT := T#1s);
             IF TON_Sucker1.Q THEN
               TON_Sucker1(IN := FALSE);
               FSM_Sucker1 := 2;
@@ -358,8 +358,14 @@ FUNCTION_BLOCK FSM1_Triggers
             TON_Sucker2(IN := FALSE);
             FSM1_OutSucker2Grab:=FALSE;
             FSM1_OutSucker2Z:=FALSE;
-            FSM_Sucker2:=0;
+            FSM_Sucker2:=6;
+          END_IF;
+        6:
+          TON_Sucker2(IN:= TRUE, PT:= T#1s);
+          IF TON_Sucker2.Q THEN
+            TON_Sucker2(IN := FALSE);
             FSM1_CurrentTransition:=FSM1_VACIAR_SUCCIONADOR1;
+            FSM_Sucker2:=0;
           END_IF;
         END_CASE;
         
@@ -433,6 +439,11 @@ FUNCTION_BLOCK FSM2_Petri
       FSM2_CurrentStatus:=FSM2_UBICANDO_PALLET;
   END_IF;
 
+  IF FSM2_CurrentTransition = FSM2_DEPOSITAR_PALLET
+    THEN
+      FSM2_CurrentStatus:= FSM2_DEPOSITANDO_PALLET;
+  END_IF;
+
 
 END_FUNCTION_BLOCK
 
@@ -470,6 +481,34 @@ FUNCTION_BLOCK FSM2_Triggers
   VAR_EXTERNAL
     FSM3_COMPLETE : BOOL;
   END_VAR
+  VAR
+    FSM_Locate : INT := 0;
+  END_VAR
+  VAR_EXTERNAL
+    FSM2_SensorVision1 : INT;
+  END_VAR
+  VAR
+    FSM2_SensorVision1Value : INT := 0;
+  END_VAR
+  VAR_EXTERNAL
+    FSM2_OutStacker1Right : BOOL;
+    FSM2_OutStacker1Lift : BOOL;
+    FSM2_OutStacker1Left : BOOL;
+  END_VAR
+  VAR
+    TON_Locate : TON;
+  END_VAR
+  VAR_EXTERNAL
+    BASE_GREEN : INT;
+    BASE_BLUE : INT;
+    LID_BLUE : INT;
+    LID_GREEN : INT;
+    FSM2_Stacker1Position : INT;
+    FSM2_SensorStacker1 : BOOL;
+  END_VAR
+  VAR
+    FTRIG_SensorStacker1 : F_TRIG;
+  END_VAR
 
   FSM2_FTrigStop(
     CLK := FSM2_BtnStop
@@ -483,6 +522,11 @@ FUNCTION_BLOCK FSM2_Triggers
     FSM2_OutRC1:=FALSE;
     FSM2_OutRC2:=FALSE;
     FSM2_OutLoading:=FALSE;
+    FSM_Locate:=0;
+    FSM2_Stacker1Position:=55;
+    FSM2_OutStacker1Right:=FALSE;
+    FSM2_OutStacker1Lift:=FALSE;
+    FSM2_OutStacker1Left:=FALSE;
   END_IF;
 
   CASE FSM2_CurrentStatus OF
@@ -522,7 +566,69 @@ FUNCTION_BLOCK FSM2_Triggers
           FSM2_OutLoading:=FALSE;
           FSM2_CurrentTransition:=FSM2_UBICAR_PALLET;
         END_IF;      
-        
+      
+      FSM2_UBICANDO_PALLET:
+        CASE FSM_Locate OF
+          0: (*Detectar Caja*)
+            IF FSM2_SensorVision1 >0  THEN
+                FSM2_SensorVision1Value:=FSM2_SensorVision1;
+                FSM_Locate:=1;
+            END_IF;
+          1: (*Estirar Brazo y levantar*)
+            FSM2_OutStacker1Right:=TRUE;
+            TON_Locate(IN:= TRUE, PT:=T#2s);
+            IF TON_Locate.Q THEN
+              TON_Locate(IN:= FALSE);
+              FSM2_OutStacker1Lift:=TRUE;
+              FSM_Locate:=2;
+            END_IF;
+          2: (*Retraer brazo*)
+            TON_Locate(IN:= TRUE, PT:=T#1s);
+            IF TON_Locate.Q THEN
+              TON_Locate(IN:=FALSE);
+              FSM2_OutStacker1Right:=FALSE;
+              FSM_Locate:= 3;
+            END_IF;
+          3:(*Ubicar pallet en columna 1 || 2*)
+            IF FSM2_SensorVision1Value = BASE_GREEN OR FSM2_SensorVision1Value = LID_GREEN THEN
+              FSM2_Stacker1Position:=2;
+            ELSIF FSM2_SensorVision1Value = BASE_BLUE OR FSM2_SensorVision1Value = LID_BLUE THEN
+              FSM2_Stacker1Position:=8;
+            END_IF;
+            FSM_Locate:=4;
+          4: (*Esperar que llegue a ubicación*)
+            FTRIG_SensorStacker1(CLK := FSM2_SensorStacker1);
+            IF FTRIG_SensorStacker1.Q  THEN
+                FSM2_OutStacker1Left:=TRUE;
+                FSM_Locate:=5;
+            END_IF;
+          5:(*Bajar Pallet*)
+            TON_Locate(IN:= TRUE, PT:=T#1s);
+            IF TON_Locate.Q THEN
+              TON_Locate(IN:=FALSE);
+              FSM2_OutStacker1Lift:=FALSE;
+              FSM_Locate:=6;
+            END_IF;
+          6:(*Retraer brazo*)
+            TON_Locate(IN:= TRUE, PT:=T#1s);
+            IF TON_Locate.Q THEN
+              FSM2_OutStacker1Left:=FALSE;
+              FSM_Locate:=7;
+            END_IF;
+          7:(*Reubicar en posicion inicial*)
+            TON_Locate(IN:= TRUE, PT:=T#1s);
+            IF TON_Locate.Q THEN
+              FSM2_Stacker1Position:=55;
+              FSM_Locate:=8;
+            END_IF;
+          8:(*Esperando que llegue a la posicion*)
+            FTRIG_SensorStacker1(CLK := FSM2_SensorStacker1);
+            IF FTRIG_SensorStacker1.Q THEN
+                FSM_Locate:=0;
+                FSM2_CurrentTransition:=FSM2_DEPOSITAR_PALLET;
+            END_IF;
+          END_CASE;
+          
 
   END_CASE;
 END_FUNCTION_BLOCK
@@ -564,6 +670,7 @@ CONFIGURATION Config0
       FSM2_SensorRCTurnLimit AT %IX101.3 : BOOL := FALSE;
       FSM2_SensorEntry AT %IX101.4 : BOOL := FALSE;
       FSM1_SensorComplete AT %IX101.5 : BOOL := FALSE;
+      FSM2_SensorStacker1 AT %IX101.6 : BOOL := FALSE;
       FSM1_RCSorting1 AT %QX100.0 : BOOL := FALSE;
       FSM1_RCSorting2 AT %QX100.1 : BOOL := FALSE;
       FSM1_RCSorting3 AT %QX100.2 : BOOL := FALSE;
@@ -591,11 +698,15 @@ CONFIGURATION Config0
       FSM2_OutRC1 AT %QX103.0 : BOOL := FALSE;
       FSM2_OutRC2 AT %QX103.1 : BOOL := FALSE;
       FSM2_OutLoading AT %QX103.2 : BOOL := FALSE;
+      FSM2_OutStacker1Right AT %QX103.3 : BOOL := FALSE;
+      FSM2_OutStacker1Lift AT %QX103.4 : BOOL := FALSE;
+      FSM2_OutStacker1Left AT %QX103.5 : BOOL := FALSE;
       FSM1_SensorVision1 AT %IW100 : INT := 0;
-      FSM1_SensorVision2 AT %IW101 : INT := 0;
+      FSM2_SensorVision1 AT %IW101 : INT := 0;
       FSM1_Sucker1X AT %QW100 : INT := 0;
       FSM1_Sucker1Y AT %QW101 : INT := 0;
       FSM1_Sucker1Z AT %QW102 : INT := 0;
+      FSM2_Stacker1Position AT %QW103 : INT := 0;
       BASE_BLUE : INT := 3;
       BASE_GREEN : INT := 6;
       LID_GREEN : INT := 5;
@@ -608,7 +719,7 @@ CONFIGURATION Config0
   END_RESOURCE
 END_CONFIGURATION
 
-(*DBG:char md5[] = "bf7eff61f268d4a571421ff58d807475";*)
+(*DBG:char md5[] = "b36ff2cb816da73abaf3835cc78f3c58";*)
 (*DBG:/**)
 (*DBG: * This file is part of OpenPLC Runtime*)
 (*DBG: **)
@@ -659,6 +770,7 @@ END_CONFIGURATION
 (*DBG:extern __IEC_BOOL_t RES0__FSM2_SENSORRCTURNLIMIT;*)
 (*DBG:extern __IEC_BOOL_t RES0__FSM2_SENSORENTRY;*)
 (*DBG:extern __IEC_BOOL_t RES0__FSM1_SENSORCOMPLETE;*)
+(*DBG:extern __IEC_BOOL_t RES0__FSM2_SENSORSTACKER1;*)
 (*DBG:extern __IEC_BOOL_t RES0__FSM1_RCSORTING1;*)
 (*DBG:extern __IEC_BOOL_t RES0__FSM1_RCSORTING2;*)
 (*DBG:extern __IEC_BOOL_t RES0__FSM1_RCSORTING3;*)
@@ -686,11 +798,15 @@ END_CONFIGURATION
 (*DBG:extern __IEC_BOOL_t RES0__FSM2_OUTRC1;*)
 (*DBG:extern __IEC_BOOL_t RES0__FSM2_OUTRC2;*)
 (*DBG:extern __IEC_BOOL_t RES0__FSM2_OUTLOADING;*)
+(*DBG:extern __IEC_BOOL_t RES0__FSM2_OUTSTACKER1RIGHT;*)
+(*DBG:extern __IEC_BOOL_t RES0__FSM2_OUTSTACKER1LIFT;*)
+(*DBG:extern __IEC_BOOL_t RES0__FSM2_OUTSTACKER1LEFT;*)
 (*DBG:extern __IEC_INT_t RES0__FSM1_SENSORVISION1;*)
-(*DBG:extern __IEC_INT_t RES0__FSM1_SENSORVISION2;*)
+(*DBG:extern __IEC_INT_t RES0__FSM2_SENSORVISION1;*)
 (*DBG:extern __IEC_INT_t RES0__FSM1_SUCKER1X;*)
 (*DBG:extern __IEC_INT_t RES0__FSM1_SUCKER1Y;*)
 (*DBG:extern __IEC_INT_t RES0__FSM1_SUCKER1Z;*)
+(*DBG:extern __IEC_INT_t RES0__FSM2_STACKER1POSITION;*)
 (*DBG:extern __IEC_INT_t RES0__BASE_BLUE;*)
 (*DBG:extern __IEC_INT_t RES0__BASE_GREEN;*)
 (*DBG:extern __IEC_INT_t RES0__LID_GREEN;*)
@@ -717,6 +833,7 @@ END_CONFIGURATION
 (*DBG:    {&(RES0__FSM2_SENSORRCTURNLIMIT), BOOL_ENUM},*)
 (*DBG:    {&(RES0__FSM2_SENSORENTRY), BOOL_ENUM},*)
 (*DBG:    {&(RES0__FSM1_SENSORCOMPLETE), BOOL_ENUM},*)
+(*DBG:    {&(RES0__FSM2_SENSORSTACKER1), BOOL_ENUM},*)
 (*DBG:    {&(RES0__FSM1_RCSORTING1), BOOL_ENUM},*)
 (*DBG:    {&(RES0__FSM1_RCSORTING2), BOOL_ENUM},*)
 (*DBG:    {&(RES0__FSM1_RCSORTING3), BOOL_ENUM},*)
@@ -744,11 +861,15 @@ END_CONFIGURATION
 (*DBG:    {&(RES0__FSM2_OUTRC1), BOOL_ENUM},*)
 (*DBG:    {&(RES0__FSM2_OUTRC2), BOOL_ENUM},*)
 (*DBG:    {&(RES0__FSM2_OUTLOADING), BOOL_ENUM},*)
+(*DBG:    {&(RES0__FSM2_OUTSTACKER1RIGHT), BOOL_ENUM},*)
+(*DBG:    {&(RES0__FSM2_OUTSTACKER1LIFT), BOOL_ENUM},*)
+(*DBG:    {&(RES0__FSM2_OUTSTACKER1LEFT), BOOL_ENUM},*)
 (*DBG:    {&(RES0__FSM1_SENSORVISION1), INT_ENUM},*)
-(*DBG:    {&(RES0__FSM1_SENSORVISION2), INT_ENUM},*)
+(*DBG:    {&(RES0__FSM2_SENSORVISION1), INT_ENUM},*)
 (*DBG:    {&(RES0__FSM1_SUCKER1X), INT_ENUM},*)
 (*DBG:    {&(RES0__FSM1_SUCKER1Y), INT_ENUM},*)
 (*DBG:    {&(RES0__FSM1_SUCKER1Z), INT_ENUM},*)
+(*DBG:    {&(RES0__FSM2_STACKER1POSITION), INT_ENUM},*)
 (*DBG:    {&(RES0__BASE_BLUE), INT_ENUM},*)
 (*DBG:    {&(RES0__BASE_GREEN), INT_ENUM},*)
 (*DBG:    {&(RES0__LID_GREEN), INT_ENUM},*)
@@ -927,9 +1048,36 @@ END_CONFIGURATION
 (*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FTRIG_SENSORCOMPLETE.M), BOOL_ENUM},*)
 (*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FSM2_SORTING_PRIORITY), BOOL_ENUM},*)
 (*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FSM3_COMPLETE), BOOL_P_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FSM_LOCATE), INT_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FSM2_SENSORVISION1), INT_P_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FSM2_SENSORVISION1VALUE), INT_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FSM2_OUTSTACKER1RIGHT), BOOL_P_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FSM2_OUTSTACKER1LIFT), BOOL_P_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FSM2_OUTSTACKER1LEFT), BOOL_P_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.TON_LOCATE.EN), BOOL_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.TON_LOCATE.ENO), BOOL_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.TON_LOCATE.IN), BOOL_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.TON_LOCATE.PT), TIME_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.TON_LOCATE.Q), BOOL_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.TON_LOCATE.ET), TIME_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.TON_LOCATE.STATE), SINT_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.TON_LOCATE.PREV_IN), BOOL_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.TON_LOCATE.CURRENT_TIME), TIME_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.TON_LOCATE.START_TIME), TIME_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.BASE_GREEN), INT_P_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.BASE_BLUE), INT_P_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.LID_BLUE), INT_P_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.LID_GREEN), INT_P_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FSM2_STACKER1POSITION), INT_P_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FSM2_SENSORSTACKER1), BOOL_P_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FTRIG_SENSORSTACKER1.EN), BOOL_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FTRIG_SENSORSTACKER1.ENO), BOOL_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FTRIG_SENSORSTACKER1.CLK), BOOL_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FTRIG_SENSORSTACKER1.Q), BOOL_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.FSM2_TRIGGERS0.FTRIG_SENSORSTACKER1.M), BOOL_ENUM},*)
 (*DBG:};*)
 (*DBG:*)
-(*DBG:#define VAR_COUNT               224*)
+(*DBG:#define VAR_COUNT               256*)
 (*DBG:*)
 (*DBG:uint16_t get_var_count(void)*)
 (*DBG:{*)

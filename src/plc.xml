@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-03-16T15:34:21"/>
-  <contentHeader name="Proyecto" modificationDateTime="2025-04-13T06:10:43">
+  <contentHeader name="Proyecto" modificationDateTime="2025-04-13T08:10:27">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -58,6 +58,7 @@
               <value name="FSM2_INICIANDO_SECUENCIA"/>
               <value name="FSM2_DETECTANDO_PALLET"/>
               <value name="FSM2_UBICANDO_PALLET"/>
+              <value name="FSM2_DEPOSITANDO_PALLET"/>
             </values>
           </enum>
         </baseType>
@@ -70,6 +71,7 @@
               <value name="FSM2_INICIAR_SECUENCIA"/>
               <value name="FSM2_DETECTAR_PALLET"/>
               <value name="FSM2_UBICAR_PALLET"/>
+              <value name="FSM2_DEPOSITAR_PALLET"/>
             </values>
           </enum>
         </baseType>
@@ -671,7 +673,7 @@ CASE FSM1_CurrentStatus OF
           END_IF;
         1:
           FSM1_Sucker1X := 1;
-          TON_Sucker1(IN := TRUE, PT := T#2s);
+          TON_Sucker1(IN := TRUE, PT := T#1s);
           IF TON_Sucker1.Q THEN
             TON_Sucker1(IN := FALSE);
             FSM_Sucker1 := 2;
@@ -701,17 +703,17 @@ CASE FSM1_CurrentStatus OF
           END_IF;
         1:
           FSM1_Sucker1Z := 8;
-          TON_Sucker1(IN := TRUE, PT := T#2s);
+          TON_Sucker1(IN := TRUE, PT := T#1s);
           IF TON_Sucker1.Q THEN
             TON_Sucker1(IN := FALSE);
             FSM_Sucker1 := 2;
           END_IF;
         2:
-          FSM1_OutSucker1Grab := TRUE;TON_Sucker1(IN := TRUE, PT := T#1s);
-          IF TON_Sucker1.Q THEN
-            TON_Sucker1(IN := FALSE);
-            FSM1_Sucker1Z := 0;  
-            FSM_Sucker1 := 3;
+          FSM1_OutSucker1Grab := TRUE;TON_Sucker1(IN := TRUE, PT := T#1s);
+          IF TON_Sucker1.Q THEN
+            TON_Sucker1(IN := FALSE);
+            FSM1_Sucker1Z := 0;  
+            FSM_Sucker1 := 3;
           END_IF;        
         3:
           FSM_Sucker1:=0;
@@ -760,8 +762,14 @@ CASE FSM1_CurrentStatus OF
           TON_Sucker2(IN := FALSE);
           FSM1_OutSucker2Grab:=FALSE;
           FSM1_OutSucker2Z:=FALSE;
-          FSM_Sucker2:=0;
+          FSM_Sucker2:=6;
+        END_IF;
+      6:
+        TON_Sucker2(IN:= TRUE, PT:= T#1s);
+        IF TON_Sucker2.Q THEN
+          TON_Sucker2(IN := FALSE);
           FSM1_CurrentTransition:=FSM1_VACIAR_SUCCIONADOR1;
+          FSM_Sucker2:=0;
         END_IF;
       END_CASE;
       
@@ -846,6 +854,11 @@ END_IF;
 IF FSM2_CurrentTransition = FSM2_UBICAR_PALLET
   THEN
     FSM2_CurrentStatus:=FSM2_UBICANDO_PALLET;
+END_IF;
+
+IF FSM2_CurrentTransition = FSM2_DEPOSITAR_PALLET
+  THEN
+    FSM2_CurrentStatus:= FSM2_DEPOSITANDO_PALLET;
 END_IF;
 
 
@@ -973,6 +986,96 @@ END_IF;
               </type>
             </variable>
           </externalVars>
+          <localVars>
+            <variable name="FSM_Locate">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM2_SensorVision1">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="FSM2_SensorVision1Value">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM2_OutStacker1Right">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM2_OutStacker1Lift">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM2_OutStacker1Left">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="TON_Locate">
+              <type>
+                <derived name="TON"/>
+              </type>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="BASE_GREEN">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="BASE_BLUE">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="LID_BLUE">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="LID_GREEN">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="FSM2_Stacker1Position">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="FSM2_SensorStacker1">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="FTRIG_SensorStacker1">
+              <type>
+                <derived name="F_TRIG"/>
+              </type>
+            </variable>
+          </localVars>
         </interface>
         <body>
           <ST>
@@ -988,6 +1091,11 @@ IF FSM2_FTrigStop.Q THEN
   FSM2_OutRC1:=FALSE;
   FSM2_OutRC2:=FALSE;
   FSM2_OutLoading:=FALSE;
+  FSM_Locate:=0;
+  FSM2_Stacker1Position:=55;
+  FSM2_OutStacker1Right:=FALSE;
+  FSM2_OutStacker1Lift:=FALSE;
+  FSM2_OutStacker1Left:=FALSE;
 END_IF;
 
 CASE FSM2_CurrentStatus OF
@@ -1027,7 +1135,69 @@ CASE FSM2_CurrentStatus OF
         FSM2_OutLoading:=FALSE;
         FSM2_CurrentTransition:=FSM2_UBICAR_PALLET;
       END_IF;      
-      
+    
+    FSM2_UBICANDO_PALLET:
+      CASE FSM_Locate OF
+        0: (*Detectar Caja*)
+          IF FSM2_SensorVision1 >0  THEN
+              FSM2_SensorVision1Value:=FSM2_SensorVision1;
+              FSM_Locate:=1;
+          END_IF;
+        1: (*Estirar Brazo y levantar*)
+          FSM2_OutStacker1Right:=TRUE;
+          TON_Locate(IN:= TRUE, PT:=T#2s);
+          IF TON_Locate.Q THEN
+            TON_Locate(IN:= FALSE);
+            FSM2_OutStacker1Lift:=TRUE;
+            FSM_Locate:=2;
+          END_IF;
+        2: (*Retraer brazo*)
+          TON_Locate(IN:= TRUE, PT:=T#1s);
+          IF TON_Locate.Q THEN
+            TON_Locate(IN:=FALSE);
+            FSM2_OutStacker1Right:=FALSE;
+            FSM_Locate:= 3;
+          END_IF;
+        3:(*Ubicar pallet en columna 1 || 2*)
+          IF FSM2_SensorVision1Value = BASE_GREEN OR FSM2_SensorVision1Value = LID_GREEN THEN
+            FSM2_Stacker1Position:=2;
+          ELSIF FSM2_SensorVision1Value = BASE_BLUE OR FSM2_SensorVision1Value = LID_BLUE THEN
+            FSM2_Stacker1Position:=8;
+          END_IF;
+          FSM_Locate:=4;
+        4: (*Esperar que llegue a ubicación*)
+          FTRIG_SensorStacker1(CLK := FSM2_SensorStacker1);
+          IF FTRIG_SensorStacker1.Q  THEN
+              FSM2_OutStacker1Left:=TRUE;
+              FSM_Locate:=5;
+          END_IF;
+        5:(*Bajar Pallet*)
+          TON_Locate(IN:= TRUE, PT:=T#1s);
+          IF TON_Locate.Q THEN
+            TON_Locate(IN:=FALSE);
+            FSM2_OutStacker1Lift:=FALSE;
+            FSM_Locate:=6;
+          END_IF;
+        6:(*Retraer brazo*)
+          TON_Locate(IN:= TRUE, PT:=T#1s);
+          IF TON_Locate.Q THEN
+            FSM2_OutStacker1Left:=FALSE;
+            FSM_Locate:=7;
+          END_IF;
+        7:(*Reubicar en posicion inicial*)
+          TON_Locate(IN:= TRUE, PT:=T#2s);
+          IF TON_Locate.Q THEN
+            FSM2_Stacker1Position:=55;
+            FSM_Locate:=8;
+          END_IF;
+        8:(*Esperando que llegue a la posicion*)
+          FTRIG_SensorStacker1(CLK := FSM2_SensorStacker1);
+          IF FTRIG_SensorStacker1.Q THEN
+              FSM_Locate:=0;
+              FSM2_CurrentTransition:=FSM2_DEPOSITAR_PALLET;
+          END_IF;
+        END_CASE;
+        
 
 END_CASE;]]></xhtml:p>
           </ST>
@@ -1180,6 +1350,14 @@ END_CASE;]]></xhtml:p>
               </initialValue>
             </variable>
             <variable name="FSM1_SensorComplete" address="%IX101.5">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_SensorStacker1" address="%IX101.6">
               <type>
                 <BOOL/>
               </type>
@@ -1403,6 +1581,30 @@ END_CASE;]]></xhtml:p>
                 <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
+            <variable name="FSM2_OutStacker1Right" address="%QX103.3">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_OutStacker1Lift" address="%QX103.4">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_OutStacker1Left" address="%QX103.5">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
             <variable name="FSM1_SensorVision1" address="%IW100">
               <type>
                 <INT/>
@@ -1411,7 +1613,7 @@ END_CASE;]]></xhtml:p>
                 <simpleValue value="0"/>
               </initialValue>
             </variable>
-            <variable name="FSM1_SensorVision2" address="%IW101">
+            <variable name="FSM2_SensorVision1" address="%IW101">
               <type>
                 <INT/>
               </type>
@@ -1436,6 +1638,14 @@ END_CASE;]]></xhtml:p>
               </initialValue>
             </variable>
             <variable name="FSM1_Sucker1Z" address="%QW102">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM2_Stacker1Position" address="%QW103">
               <type>
                 <INT/>
               </type>
