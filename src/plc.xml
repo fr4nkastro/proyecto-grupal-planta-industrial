@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-03-16T15:34:21"/>
-  <contentHeader name="Proyecto" modificationDateTime="2025-04-12T13:24:28">
+  <contentHeader name="Proyecto" modificationDateTime="2025-04-12T18:43:47">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -25,6 +25,7 @@
               <value name="FSM1_ESPERANDO_CLASIFICACION"/>
               <value name="FSM1_ESPERANDO_DETECCION_PIEZA"/>
               <value name="FSM1_CLAMPEANDO"/>
+              <value name="FSM1_RECOGIENDO_PIEZA_SUCCIONADOR1"/>
             </values>
           </enum>
         </baseType>
@@ -38,6 +39,7 @@
               <value name="FSM1_CLASIFICAR_CAJAS_COLOR"/>
               <value name="FSM1_DETECTAR_PIEZA_EMPUJAR"/>
               <value name="FSM1_CLAMPEAR"/>
+              <value name="FSM1_RECOGER_PIEZA_SUCCIONADOR1"/>
             </values>
           </enum>
         </baseType>
@@ -136,6 +138,10 @@ IF FSM1_CurrentTransition = FSM1_CLAMPEAR
       FSM1_CurrentStatus:=FSM1_CLAMPEANDO;
 END_IF;
 
+IF FSM1_CurrentTransition = FSM1_RECOGER_PIEZA_SUCCIONADOR1
+  THEN
+      FSM1_CurrentStatus:=FSM1_RECOGIENDO_PIEZA_SUCCIONADOR1;
+END_IF;
 ]]></xhtml:p>
           </ST>
         </body>
@@ -231,12 +237,12 @@ END_IF;
             </variable>
           </localVars>
           <externalVars>
-            <variable name="FSM1_SortingSensor1">
+            <variable name="FSM1_SensorPusher1">
               <type>
                 <BOOL/>
               </type>
             </variable>
-            <variable name="FSM1_SortingSensor2">
+            <variable name="FSM1_SensorPusher2">
               <type>
                 <BOOL/>
               </type>
@@ -283,6 +289,84 @@ END_IF;
               </type>
             </variable>
             <variable name="FTRIG_Pusher2">
+              <type>
+                <derived name="F_TRIG"/>
+              </type>
+            </variable>
+            <variable name="FTRIG_SensorClampBlue">
+              <type>
+                <derived name="F_TRIG"/>
+              </type>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM1_SensorClampBlue">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_SensorClampGreen">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_OutClampBlue">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_OutClampGreen">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="TP_ClampBlue">
+              <type>
+                <derived name="TP"/>
+              </type>
+            </variable>
+            <variable name="FTRIG_ClampBlue">
+              <type>
+                <derived name="F_TRIG"/>
+              </type>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="BASE_BLUE">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="LID_BLUE">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="LID_GREEN">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="BASE_GREEN">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="FTRIG_SensorClampGreen">
+              <type>
+                <derived name="F_TRIG"/>
+              </type>
+            </variable>
+            <variable name="TP_ClampGreen">
+              <type>
+                <derived name="TP"/>
+              </type>
+            </variable>
+            <variable name="FTRIG_ClampGreen">
               <type>
                 <derived name="F_TRIG"/>
               </type>
@@ -348,11 +432,11 @@ END_IF;
 
 IF FSM1_CurrentStatus =FSM1_ESPERANDO_DETECCION_PIEZA 
     THEN
-      IF  SensorVision1Value = 5 OR 
-          SensorVision1Value = 6
+      IF  SensorVision1Value = LID_GREEN OR 
+          SensorVision1Value = BASE_GREEN
       THEN
         TP_Pusher1(
-         IN := FSM1_SortingSensor1,
+         IN := FSM1_SensorPusher1,
          PT := T#2s,
          Q => FSM1_PusherSorting1
         );
@@ -368,11 +452,11 @@ IF FSM1_CurrentStatus =FSM1_ESPERANDO_DETECCION_PIEZA
         END_IF;
       END_IF;
       
-      IF  SensorVision1Value = 2 OR 
-          SensorVision1Value = 3
+      IF  SensorVision1Value = LID_BLUE OR 
+          SensorVision1Value = BASE_BLUE
         THEN
           TP_Pusher2(
-           IN := FSM1_SortingSensor2,
+           IN := FSM1_SensorPusher2,
            PT := T#2s,
            Q => FSM1_PusherSorting2
           );
@@ -386,53 +470,58 @@ IF FSM1_CurrentStatus =FSM1_ESPERANDO_DETECCION_PIEZA
       END_IF;
       
 END_IF;
+
+
+IF FSM1_CurrentStatus = FSM1_CLAMPEANDO 
+  THEN
+    IF  SensorVision1Value = LID_BLUE OR 
+          SensorVision1Value = BASE_BLUE
+      THEN
+      (*Detectar cuando la pieza ha pasado por completo el sensor*)
+      FTRIG_SensorClampBlue(
+         CLK := FSM1_SensorClampBlue
+      );
+      TP_ClampBlue(
+         IN := FTRIG_SensorClampBlue.Q ,
+         PT := T#1s,
+         Q => FSM1_OutClampBlue
+       );
+      FTRIG_ClampBlue(
+        CLK := TP_ClampBlue.Q
+       );
+      IF FTRIG_ClampBlue.Q THEN
+        FSM1_CurrentTransition:=FSM1_RECOGER_PIEZA_SUCCIONADOR1;
+      END_IF;
+  END_IF;
+  
+  IF  SensorVision1Value = LID_GREEN OR 
+          SensorVision1Value = BASE_GREEN
+    THEN
+      (*Detectar cuando la pieza ha pasado por completo el sensor*)
+      FTRIG_SensorClampGreen(
+         CLK := FSM1_SensorClampGreen
+      );
+      TP_ClampGreen(
+         IN := FTRIG_SensorClampGreen.Q ,
+         PT := T#1s,
+         Q => FSM1_OutClampGreen
+       );
+      FTRIG_ClampGreen(
+        CLK := TP_ClampGreen.Q
+       );
+      IF FTRIG_ClampGreen.Q THEN
+        FSM1_CurrentTransition:=FSM1_RECOGER_PIEZA_SUCCIONADOR1;
+      END_IF;
+  END_IF;
+  
+  
+  
+END_IF;
       
       
           
             
 ]]></xhtml:p>
-          </ST>
-        </body>
-      </pou>
-      <pou name="FSM2_Petri" pouType="functionBlock">
-        <interface>
-          <externalVars>
-            <variable name="FSM2_CurrentTransition">
-              <type>
-                <derived name="FSM2_TTRANSITIONS"/>
-              </type>
-            </variable>
-            <variable name="FSM2_CurrentStatus">
-              <type>
-                <derived name="FSM2_TSTATUS"/>
-              </type>
-            </variable>
-          </externalVars>
-        </interface>
-        <body>
-          <ST>
-            <xhtml:p><![CDATA[]]></xhtml:p>
-          </ST>
-        </body>
-      </pou>
-      <pou name="FSM2_Triggers" pouType="functionBlock">
-        <interface>
-          <externalVars>
-            <variable name="FSM2_CurrentStatus">
-              <type>
-                <derived name="FSM2_TSTATUS"/>
-              </type>
-            </variable>
-            <variable name="FSM2_CurrentTransition">
-              <type>
-                <derived name="FSM2_TTRANSITIONS"/>
-              </type>
-            </variable>
-          </externalVars>
-        </interface>
-        <body>
-          <ST>
-            <xhtml:p><![CDATA[]]></xhtml:p>
           </ST>
         </body>
       </pou>
@@ -494,7 +583,7 @@ END_IF;
                 <simpleValue value="TRUE"/>
               </initialValue>
             </variable>
-            <variable name="FSM1_SortingSensor1" address="%IX100.2">
+            <variable name="FSM1_SensorPusher1" address="%IX100.2">
               <type>
                 <BOOL/>
               </type>
@@ -502,7 +591,23 @@ END_IF;
                 <simpleValue value="TRUE"/>
               </initialValue>
             </variable>
-            <variable name="FSM1_SortingSensor2" address="%IX100.3">
+            <variable name="FSM1_SensorPusher2" address="%IX100.3">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="TRUE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_SensorClampBlue" address="%IX100.4">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="TRUE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_SensorClampGreen" address="%IX100.5">
               <type>
                 <BOOL/>
               </type>
@@ -614,12 +719,68 @@ END_IF;
                 <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
+            <variable name="FSM1_OutClampBlue" address="%QX101.5">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_OutClampGreen" address="%QX101.6">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
             <variable name="FSM1_SensorVision1" address="%IW100">
               <type>
                 <INT/>
               </type>
               <initialValue>
                 <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_SensorVision2" address="%IW101">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="BASE_BLUE">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="3"/>
+              </initialValue>
+            </variable>
+            <variable name="BASE_GREEN">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="6"/>
+              </initialValue>
+            </variable>
+            <variable name="LID_GREEN">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="5"/>
+              </initialValue>
+            </variable>
+            <variable name="LID_BLUE">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="2"/>
               </initialValue>
             </variable>
           </globalVars>
