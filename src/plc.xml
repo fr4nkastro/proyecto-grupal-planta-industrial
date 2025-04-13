@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-03-16T15:34:21"/>
-  <contentHeader name="Proyecto" modificationDateTime="2025-04-12T22:07:13">
+  <contentHeader name="Proyecto" modificationDateTime="2025-04-13T03:38:41">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -44,6 +44,7 @@
               <value name="FSM1_RECOGER_PIEZA_SUCCIONADOR1"/>
               <value name="FSM1_RECOGER_CAJA_SUCCIONADOR2"/>
               <value name="FSM1_VACIAR_SUCCIONADOR1"/>
+              <value name="FSM1_REINICIAR"/>
             </values>
           </enum>
         </baseType>
@@ -156,6 +157,11 @@ END_IF;
 IF FSM1_CurrentTransition = FSM1_VACIAR_SUCCIONADOR1
   THEN
       FSM1_CurrentStatus:=FSM1_VACIANDO_SUCCIONADOR1;
+END_IF;
+
+IF FSM1_CurrentTransition = FSM1_REINICIAR
+  THEN
+      FSM1_CurrentStatus:=FSM1_ESPERA;
 END_IF;]]></xhtml:p>
           </ST>
         </body>
@@ -425,6 +431,14 @@ END_IF;]]></xhtml:p>
                 <simpleValue value="0"/>
               </initialValue>
             </variable>
+            <variable name="FSM_Sucker1B">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
           </localVars>
           <externalVars>
             <variable name="FSM1_OutSucker1Grab">
@@ -447,7 +461,12 @@ END_IF;]]></xhtml:p>
                 <BOOL/>
               </type>
             </variable>
-            <variable name="FSM1_OutRCPallet">
+            <variable name="FSM1_OutRCPalletEntry">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_OutRCPalletExit">
               <type>
                 <BOOL/>
               </type>
@@ -472,6 +491,28 @@ END_IF;]]></xhtml:p>
           </localVars>
           <externalVars>
             <variable name="FSM1_OutSucker2Grab">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="FSM1_COMPLETE">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="FSM1_RESET">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="FSM1_SensorPalletWithBox">
               <type>
                 <BOOL/>
               </type>
@@ -505,17 +546,25 @@ IF FSM1_FTrigStop.Q THEN
   FSM1_Sucker1X := 0;
   FSM_Sucker1 := 0;
   FSM_Sucker2 := 0;
+  FSM_Sucker1B:=0;
   FSM1_OutSucker2Z := FALSE;
   FSM1_OutSucker2X := FALSE;
   FSM1_OutSucker2Grab := FALSE;
+  FSM1_COMPLETE:=FALSE;
+  FSM1_RESET:=FALSE;
 END_IF;
 
 CASE FSM1_CurrentStatus OF
 
   FSM1_ESPERA:
-    IF FSM1_BtnStart THEN
+    IF (FSM1_BtnStart AND NOT FSM1_COMPLETE )  THEN
       FSM1_CurrentTransition := FSM1_INICIAR;
     END_IF;
+    IF (FSM1_RESET AND NOT FSM1_COMPLETE )  THEN
+      FSM1_RESET:=FALSE;
+      FSM1_CurrentTransition := FSM1_INICIAR;
+    END_IF;
+    
 
   FSM1_ARRANCANDO_BANDAS:
     FSM1_RCSorting1 := TRUE;
@@ -652,12 +701,14 @@ CASE FSM1_CurrentStatus OF
           TON_Sucker2(IN:= FALSE);
           FSM1_OutSucker2Grab:=TRUE;
           FSM1_OutSucker2X:=FALSE;
-          FSM1_OutRCPallet:=TRUE;
+          FSM1_OutRCPalletEntry:=TRUE;
+          FSM1_OutRCPalletExit:=TRUE;
           FSM_Sucker2:=4;
         END_IF;
       4:
         IF FSM1_SensorPallet THEN
-              FSM1_OutRCPallet:=FALSE;
+              FSM1_OutRCPalletEntry:=FALSE;
+              FSM1_OutRCPalletExit:=FALSE;
               FSM_Sucker2:=5;
         END_IF;
       5:
@@ -670,6 +721,52 @@ CASE FSM1_CurrentStatus OF
           FSM1_CurrentTransition:=FSM1_VACIAR_SUCCIONADOR1;
         END_IF;
       END_CASE;
+      
+  FSM1_VACIANDO_SUCCIONADOR1:
+    CASE FSM_Sucker1B OF
+      0:
+        FSM1_OutRCPalletExit:=TRUE;
+        IF FSM1_SensorPalletWithBox THEN
+          FSM1_OutRCPalletExit:= FALSE;
+          FSM_Sucker1B:=1;
+        END_IF;
+      1:
+        FSM1_Sucker1Z:=0;
+        TON_Sucker1(IN:= TRUE, PT:= T#1s);
+        IF TON_Sucker1.Q THEN
+          TON_Sucker1(IN:=FALSE);
+          FSM1_Sucker1Y:=7;
+          FSM1_Sucker1X:=5;
+          FSM_Sucker1B:=2;
+        END_IF;
+      2:
+        TON_Sucker1(IN:= TRUE, PT:= T#1s);
+        IF TON_Sucker1.Q THEN
+          TON_Sucker1(IN:= FALSE);
+          FSM1_Sucker1Z:=10;
+          FSM1_OutSucker1Grab:=FALSE;
+          FSM_Sucker1B:=3;
+        END_IF;    
+      3:
+        TON_Sucker1(IN:= TRUE, PT:= T#1s);
+        IF TON_Sucker1.Q THEN
+          TON_Sucker1(IN:=FALSE);
+          FSM1_Sucker1Z:=0;
+          FSM_Sucker1B:=4;
+        END_IF;
+      4:
+        TON_Sucker1(IN:= TRUE, PT:= T#1s);
+        IF TON_Sucker1.Q THEN
+          TON_Sucker1(IN:=FALSE);
+          FSM1_Sucker1X:=0;
+          FSM1_Sucker1Y:=0;
+          FSM1_COMPLETE:=TRUE;
+          FSM1_RESET:=TRUE;
+          FSM_Sucker1B:=0;
+          FSM1_CurrentTransition:=FSM1_REINICIAR;
+        END_IF;
+        
+    END_CASE;
 END_CASE;
 ]]></xhtml:p>
           </ST>
@@ -738,7 +835,7 @@ END_CASE;
                 <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="TRUE"/>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
             <variable name="FSM1_SensorPusher2" address="%IX100.3">
@@ -746,7 +843,7 @@ END_CASE;
                 <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="TRUE"/>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
             <variable name="FSM1_SensorClampBlue" address="%IX100.4">
@@ -754,7 +851,7 @@ END_CASE;
                 <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="TRUE"/>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
             <variable name="FSM1_SensorClampGreen" address="%IX100.5">
@@ -762,7 +859,7 @@ END_CASE;
                 <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="TRUE"/>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
             <variable name="FSM1_SensorStackableBox" address="%IX100.6">
@@ -770,7 +867,7 @@ END_CASE;
                 <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="TRUE"/>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
             <variable name="FSM1_SensorPallet" address="%IX100.7">
@@ -778,7 +875,15 @@ END_CASE;
                 <BOOL/>
               </type>
               <initialValue>
-                <simpleValue value="TRUE"/>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_SensorPalletWithBox" address="%IX101.0">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
             <variable name="FSM1_RCSorting1" address="%QX100.0">
@@ -917,7 +1022,7 @@ END_CASE;
                 <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
-            <variable name="FSM1_OutRCPallet" address="%QX102.1">
+            <variable name="FSM1_OutRCPalletEntry" address="%QX102.1">
               <type>
                 <BOOL/>
               </type>
@@ -942,6 +1047,14 @@ END_CASE;
               </initialValue>
             </variable>
             <variable name="FSM1_OutSucker2Grab" address="%QX102.4">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_OutRCPalletExit" address="%QX102.5">
               <type>
                 <BOOL/>
               </type>
@@ -1019,6 +1132,14 @@ END_CASE;
               </type>
               <initialValue>
                 <simpleValue value="2"/>
+              </initialValue>
+            </variable>
+            <variable name="FSM1_COMPLETE">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="FALSE"/>
               </initialValue>
             </variable>
           </globalVars>
