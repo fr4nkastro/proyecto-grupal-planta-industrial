@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?><pnml>
     <net id="Net-One" type="P/T net">
-        <labels x="770" y="791" width="340" height="30" border="true">
+        <labels x="771" y="792" width="341" height="31" border="true">
             <text>Esperar que el sensor SensorStorageEntry detecte el pallet</text>
         </labels>
-        <labels x="782" y="1048" width="340" height="30" border="true">
+        <labels x="783" y="1049" width="341" height="31" border="true">
             <text>Esperar que el sensor SensorStorageEntry detecte el pallet</text>
         </labels>
-        <labels x="762" y="196" width="366" height="197" border="true">
+        <labels x="763" y="197" width="367" height="198" border="true">
             <text>Estado inicial
 Validar
 GlobalSortingPriority 
@@ -19,7 +19,7 @@ si FALSE &amp;&amp; SensorPackaging = TRUE
 si  FALSE &amp;&amp; SensorPackaging = FALSE
 		CurrentTransaction = SORTING	 </text>
         </labels>
-        <labels x="784" y="1113" width="412" height="660" border="true">
+        <labels x="785" y="1114" width="413" height="661" border="true">
             <text>OutStackerCraneStorage1Left=TRUE
 Temporizar
 OutStackerCraneStorage1Lift=TRUE
@@ -62,7 +62,7 @@ Si CurrentStoragePiece=BaseGreen
 Si CurrentStoragePiece=PackageGreen
 ...</text>
         </labels>
-        <labels x="757" y="426" width="375" height="293" border="true">
+        <labels x="758" y="427" width="376" height="294" border="true">
             <text>RCStorage1 = TRUE
 RCStorage2 = TRUE
 RCStorageLoading = TRUE
@@ -82,7 +82,7 @@ Si CurrentTransacction = PACKAGING
 	Temporizar
 	OutRCTurnLeft = TRUE</text>
         </labels>
-        <labels x="787" y="871" width="366" height="148" border="true">
+        <labels x="788" y="872" width="367" height="149" border="true">
             <text>Validar SensorStorageEntry = TRUE
 Entonces
 	RCStorageLoading:=FALSE
@@ -94,10 +94,10 @@ Entonces
         </labels>
         <place id="P1">
             <graphics>
-                <position x="585.0" y="900.0"/>
+                <position x="615.0" y="900.0"/>
             </graphics>
             <name>
-                <value>ESPERANDO_PALLET</value>
+                <value>DETECTANDO_PALLET</value>
                 <graphics>
                     <offset x="0.0" y="0.0"/>
                 </graphics>
@@ -114,7 +114,7 @@ Entonces
         </place>
         <place id="P10">
             <graphics>
-                <position x="600.0" y="405.0"/>
+                <position x="615.0" y="405.0"/>
             </graphics>
             <name>
                 <value>INICIANDO_SECUENCIA</value>
@@ -134,12 +134,12 @@ Entonces
         </place>
         <place id="P6">
             <graphics>
-                <position x="612.7272727272725" y="1227.727272727273"/>
+                <position x="610.0" y="1210.0"/>
             </graphics>
             <name>
                 <value>UBICANDO_PALLET</value>
                 <graphics>
-                    <offset x="-5.0" y="35.0"/>
+                    <offset x="8.0" y="41.0"/>
                 </graphics>
             </name>
             <initialMarking>
@@ -174,7 +174,7 @@ Entonces
         </place>
         <transition id="DETECTAR_CAJA_ALMACEN">
             <graphics>
-                <position x="585.0" y="1059.5454545454545"/>
+                <position x="615.0" y="1065.0"/>
             </graphics>
             <name>
                 <value>UBICAR_PALLET</value>
@@ -200,7 +200,7 @@ Entonces
         </transition>
         <transition id="DETECTAR_PALLET">
             <graphics>
-                <position x="570.0" y="810.0"/>
+                <position x="615.0" y="780.0"/>
             </graphics>
             <name>
                 <value>DETECTAR_PALLET</value>
@@ -226,7 +226,7 @@ Entonces
         </transition>
         <transition id="T3">
             <graphics>
-                <position x="675.0" y="1755.0"/>
+                <position x="615.0" y="1755.0"/>
             </graphics>
             <name>
                 <value>REINICIAR</value>
@@ -285,8 +285,8 @@ Entonces
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="596" y="1075" curvePoint="false"/>
-            <arcpath id="001" x="621" y="1224" curvePoint="false"/>
+            <arcpath id="000" x="625" y="1080" curvePoint="false"/>
+            <arcpath id="001" x="621" y="1206" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="DETECTAR_PALLET to P1" source="DETECTAR_PALLET" target="P1">
@@ -298,8 +298,8 @@ Entonces
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="580" y="826" curvePoint="false"/>
-            <arcpath id="001" x="593" y="896" curvePoint="false"/>
+            <arcpath id="000" x="625" y="795" curvePoint="false"/>
+            <arcpath id="001" x="625" y="896" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="P10 to DETECTAR_PALLET" source="P10" target="DETECTAR_PALLET">
@@ -311,8 +311,8 @@ Entonces
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="610" y="430" curvePoint="false"/>
-            <arcpath id="001" x="580" y="816" curvePoint="false"/>
+            <arcpath id="000" x="625" y="430" curvePoint="false"/>
+            <arcpath id="001" x="625" y="785" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="P1 to DETECTAR_CAJA_ALMACEN" source="P1" target="DETECTAR_CAJA_ALMACEN">
@@ -324,8 +324,8 @@ Entonces
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="596" y="926" curvePoint="false"/>
-            <arcpath id="001" x="595" y="1065" curvePoint="false"/>
+            <arcpath id="000" x="625" y="925" curvePoint="false"/>
+            <arcpath id="001" x="625" y="1070" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="P6 to T3" source="P6" target="T3">
@@ -337,8 +337,8 @@ Entonces
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="625" y="1253" curvePoint="false"/>
-            <arcpath id="001" x="685" y="1760" curvePoint="false"/>
+            <arcpath id="000" x="621" y="1235" curvePoint="false"/>
+            <arcpath id="001" x="625" y="1760" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="P7 to T8" source="P7" target="T8">
@@ -350,8 +350,8 @@ Entonces
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="626" y="220" curvePoint="false"/>
-            <arcpath id="001" x="625" y="306" curvePoint="false"/>
+            <arcpath id="000" x="625" y="220" curvePoint="false"/>
+            <arcpath id="001" x="625" y="305" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="T3 to P7" source="T3" target="P7">
@@ -363,10 +363,10 @@ Entonces
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="700" y="1767" curvePoint="false"/>
-            <arcpath id="001" x="747" y="1769" curvePoint="false"/>
-            <arcpath id="002" x="692" y="201" curvePoint="false"/>
-            <arcpath id="003" x="640" y="205" curvePoint="false"/>
+            <arcpath id="000" x="640" y="1766" curvePoint="false"/>
+            <arcpath id="001" x="701" y="1768" curvePoint="false"/>
+            <arcpath id="002" x="706" y="216" curvePoint="false"/>
+            <arcpath id="003" x="640" y="207" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="T8 to P10" source="T8" target="P10">
@@ -378,8 +378,8 @@ Entonces
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="626" y="316" curvePoint="false"/>
-            <arcpath id="001" x="613" y="401" curvePoint="false"/>
+            <arcpath id="000" x="625" y="315" curvePoint="false"/>
+            <arcpath id="001" x="625" y="401" curvePoint="false"/>
             <type value="normal"/>
         </arc>
     </net>
