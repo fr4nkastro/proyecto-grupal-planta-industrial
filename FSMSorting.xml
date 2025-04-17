@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="ISO-8859-1"?><pnml>
     <net id="Net-One" type="P/T net">
-        <labels x="552" y="363" width="242" height="37" border="true">
+        <labels x="553" y="349" width="243" height="38" border="true">
             <text>Clasificar con el sensor de visión las cajas según su color y forma</text>
         </labels>
-        <labels x="557" y="557" width="242" height="37" border="true">
+        <labels x="558" y="558" width="243" height="38" border="true">
             <text>Detectar pieza clasificada en posición para empujar</text>
         </labels>
-        <labels x="570" y="809" width="236" height="37" border="true">
+        <labels x="556" y="795" width="237" height="38" border="true">
             <text>Detectar pieza para succionar cuando esté en posición</text>
         </labels>
-        <labels x="557" y="212" width="243" height="102" border="true">
+        <labels x="543" y="213" width="244" height="103" border="true">
             <text>Encender bandas
 BC1 &amp;&amp; BC2 &amp;&amp; BC3 &amp;&amp; BC4 &amp;&amp; BC5 &amp;&amp; BC6
 BCGreen &amp;&amp; BCBlue
 Straight Spur Conveyor 1 (-)
 Straight Spur Conveyor 2 (-)</text>
         </labels>
-        <labels x="561" y="34" width="242" height="69" border="true">
+        <labels x="547" y="35" width="243" height="70" border="true">
             <text>Estado inicial
 Validar si ButtonStart = TRUE
 Validar si GlobalSortingReady = FALSE</text>
         </labels>
-        <labels x="557" y="122" width="243" height="21" border="true">
+        <labels x="558" y="123" width="244" height="22" border="true">
             <text>Iniciar encendido de  bandas</text>
         </labels>
-        <labels x="496" y="1947" width="166" height="38" border="true">
+        <labels x="572" y="1963" width="167" height="39" border="true">
             <text>Llevar la pieza de linea verde o azul al pallet con caja</text>
         </labels>
-        <labels x="488" y="2016" width="166" height="149" border="true">
+        <labels x="564" y="2047" width="167" height="150" border="true">
             <text>OutSucker1Z=0
 Temporizar
 OutSucker1Y=6.6
@@ -38,7 +38,7 @@ Temporizar
 OutSucker1Grab=FALSE
 GlobalSortingReady = TRUE</text>
         </labels>
-        <labels x="474" y="1716" width="166" height="213" border="true">
+        <labels x="565" y="1717" width="167" height="214" border="true">
             <text>OutSucker2X = TRUE
 Temporizar
 OutSucker2Z = TRUE
@@ -53,10 +53,10 @@ OutSucker2Z = FALSE
 
 </text>
         </labels>
-        <labels x="510" y="2203" width="106" height="37" border="true">
+        <labels x="571" y="2219" width="107" height="38" border="true">
             <text>Reiniciar secuencia</text>
         </labels>
-        <labels x="559" y="1221" width="106" height="325" border="true">
+        <labels x="575" y="1222" width="107" height="326" border="true">
             <text>Si Linea Verde
 Establecer 
 SuckerZ=8.0
@@ -76,7 +76,7 @@ Temporizar
 Sucker1Grab = TRUE
 SuckerZ=0</text>
         </labels>
-        <labels x="562" y="626" width="227" height="124" border="true">
+        <labels x="563" y="627" width="228" height="125" border="true">
             <text>Si Pendiente ejecutar Pusher 1
 Entonces esperar Sensor Pusher 1
 Encender Pusher 1
@@ -85,7 +85,7 @@ Si Pendiente ejecutar Pusher 2
 Entonces esperar Sensor Pusher 2
 Encender Pusher 2</text>
         </labels>
-        <labels x="548" y="891" width="227" height="149" border="true">
+        <labels x="564" y="892" width="228" height="150" border="true">
             <text>Si SensorClampedBlue (F_TRIG) 
 Entonces
 OutClampBlue=TRUE
@@ -96,7 +96,7 @@ OutClampGreen=TRUE
 Temporizar
 OutClampGreen=FALSE</text>
         </labels>
-        <labels x="552" y="425" width="242" height="108" border="true">
+        <labels x="553" y="426" width="243" height="109" border="true">
             <text>Si Vision Sensor 1 = 
 1 || 3 || 5
 Pendiente ejecutar Pusher 2 (Front Limit)
@@ -104,7 +104,7 @@ Si Vision Sensor 1 =
 2 || 4 || 6
 Pendiente ejecutar Pusher 1 (Front Limit)</text>
         </labels>
-        <labels x="563" y="1126" width="227" height="37" border="true">
+        <labels x="564" y="1127" width="228" height="38" border="true">
             <text>Ubicar succionador en la caja clampeada</text>
         </labels>
         <place id="P0">
@@ -149,7 +149,7 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
         </place>
         <place id="P10">
             <graphics>
-                <position x="375.0" y="1725.0"/>
+                <position x="390.0" y="1725.0"/>
             </graphics>
             <name>
                 <value>RECOGIENDO_CAJA_SUCCIONADOR2</value>
@@ -249,7 +249,7 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
         </place>
         <place id="P7">
             <graphics>
-                <position x="360.0" y="2040.0"/>
+                <position x="390.0" y="2040.0"/>
             </graphics>
             <name>
                 <value>VACIANDO_SUCCIONADOR1</value>
@@ -269,7 +269,7 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
         </place>
         <transition id="REINICIAR">
             <graphics>
-                <position x="345.0" y="2205.0"/>
+                <position x="390.0" y="2205.0"/>
             </graphics>
             <name>
                 <value>REINICIAR</value>
@@ -399,7 +399,7 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
         </transition>
         <transition id="T8">
             <graphics>
-                <position x="375.0" y="1620.0"/>
+                <position x="390.0" y="1620.0"/>
             </graphics>
             <name>
                 <value>RECOGER_CAJA_SUCCIONADOR2</value>
@@ -451,7 +451,7 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
         </transition>
         <transition id="VACIAR_SUCCIONADOR1">
             <graphics>
-                <position x="360.0" y="1950.0"/>
+                <position x="390.0" y="1950.0"/>
             </graphics>
             <name>
                 <value>VACIAR_SUCCIONADOR1</value>
@@ -478,14 +478,14 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
         <arc id="P0 to T0" source="P0" target="T0">
             <graphics/>
             <inscription>
-                <value>1</value>
+                <value>2</value>
                 <graphics/>
             </inscription>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="401" y="71" curvePoint="false"/>
-            <arcpath id="001" x="401" y="126" curvePoint="false"/>
+            <arcpath id="000" x="398" y="68" curvePoint="false"/>
+            <arcpath id="001" x="398" y="123" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="P10 to VACIAR_SUCCIONADOR1" source="P10" target="VACIAR_SUCCIONADOR1">
@@ -497,8 +497,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="385" y="1751" curvePoint="false"/>
-            <arcpath id="001" x="371" y="1956" curvePoint="false"/>
+            <arcpath id="000" x="398" y="1750" curvePoint="false"/>
+            <arcpath id="001" x="398" y="1953" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="P1 to TRANSPORTAR" source="P1" target="TRANSPORTAR">
@@ -510,8 +510,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="401" y="251" curvePoint="false"/>
-            <arcpath id="001" x="401" y="366" curvePoint="false"/>
+            <arcpath id="000" x="398" y="248" curvePoint="false"/>
+            <arcpath id="001" x="398" y="363" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="P2 to T2" source="P2" target="T2">
@@ -523,8 +523,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="401" y="476" curvePoint="false"/>
-            <arcpath id="001" x="401" y="561" curvePoint="false"/>
+            <arcpath id="000" x="398" y="473" curvePoint="false"/>
+            <arcpath id="001" x="398" y="558" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="P3 to T3" source="P3" target="T3">
@@ -536,8 +536,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="401" y="686" curvePoint="false"/>
-            <arcpath id="001" x="401" y="801" curvePoint="false"/>
+            <arcpath id="000" x="398" y="683" curvePoint="false"/>
+            <arcpath id="001" x="398" y="798" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="P4 to T4" source="P4" target="T4">
@@ -549,8 +549,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="401" y="956" curvePoint="false"/>
-            <arcpath id="001" x="401" y="1131" curvePoint="false"/>
+            <arcpath id="000" x="398" y="953" curvePoint="false"/>
+            <arcpath id="001" x="398" y="1128" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="P5 to T8" source="P5" target="T8">
@@ -562,8 +562,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="401" y="1286" curvePoint="false"/>
-            <arcpath id="001" x="386" y="1626" curvePoint="false"/>
+            <arcpath id="000" x="398" y="1285" curvePoint="false"/>
+            <arcpath id="001" x="398" y="1623" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="P7 to REINICIAR" source="P7" target="REINICIAR">
@@ -575,8 +575,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="370" y="2066" curvePoint="false"/>
-            <arcpath id="001" x="356" y="2211" curvePoint="false"/>
+            <arcpath id="000" x="398" y="2063" curvePoint="false"/>
+            <arcpath id="001" x="398" y="2208" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="REINICIAR to P0" source="REINICIAR" target="P0">
@@ -588,10 +588,10 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="371" y="2217" curvePoint="false"/>
-            <arcpath id="001" x="433" y="2218" curvePoint="false"/>
-            <arcpath id="002" x="448" y="58" curvePoint="false"/>
-            <arcpath id="003" x="416" y="57" curvePoint="false"/>
+            <arcpath id="000" x="413" y="2215" curvePoint="false"/>
+            <arcpath id="001" x="431" y="2216" curvePoint="false"/>
+            <arcpath id="002" x="446" y="56" curvePoint="false"/>
+            <arcpath id="003" x="413" y="55" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="T0 to P1" source="T0" target="P1">
@@ -603,8 +603,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="401" y="136" curvePoint="false"/>
-            <arcpath id="001" x="401" y="222" curvePoint="false"/>
+            <arcpath id="000" x="398" y="133" curvePoint="false"/>
+            <arcpath id="001" x="398" y="220" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="T2 to P3" source="T2" target="P3">
@@ -616,8 +616,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="401" y="571" curvePoint="false"/>
-            <arcpath id="001" x="401" y="657" curvePoint="false"/>
+            <arcpath id="000" x="398" y="568" curvePoint="false"/>
+            <arcpath id="001" x="398" y="655" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="T3 to P4" source="T3" target="P4">
@@ -629,8 +629,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="401" y="811" curvePoint="false"/>
-            <arcpath id="001" x="401" y="927" curvePoint="false"/>
+            <arcpath id="000" x="398" y="808" curvePoint="false"/>
+            <arcpath id="001" x="398" y="925" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="T4 to P5" source="T4" target="P5">
@@ -642,8 +642,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="401" y="1141" curvePoint="false"/>
-            <arcpath id="001" x="401" y="1257" curvePoint="false"/>
+            <arcpath id="000" x="398" y="1138" curvePoint="false"/>
+            <arcpath id="001" x="398" y="1255" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="T8 to P10" source="T8" target="P10">
@@ -655,8 +655,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="386" y="1636" curvePoint="false"/>
-            <arcpath id="001" x="386" y="1722" curvePoint="false"/>
+            <arcpath id="000" x="398" y="1633" curvePoint="false"/>
+            <arcpath id="001" x="398" y="1720" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="TRANSPORTAR to P2" source="TRANSPORTAR" target="P2">
@@ -668,8 +668,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="401" y="376" curvePoint="false"/>
-            <arcpath id="001" x="401" y="447" curvePoint="false"/>
+            <arcpath id="000" x="398" y="373" curvePoint="false"/>
+            <arcpath id="001" x="398" y="445" curvePoint="false"/>
             <type value="normal"/>
         </arc>
         <arc id="VACIAR_SUCCIONADOR1 to P7" source="VACIAR_SUCCIONADOR1" target="P7">
@@ -681,8 +681,8 @@ Pendiente ejecutar Pusher 1 (Front Limit)</text>
             <tagged>
                 <value>false</value>
             </tagged>
-            <arcpath id="000" x="371" y="1966" curvePoint="false"/>
-            <arcpath id="001" x="371" y="2037" curvePoint="false"/>
+            <arcpath id="000" x="398" y="1963" curvePoint="false"/>
+            <arcpath id="001" x="398" y="2035" curvePoint="false"/>
             <type value="normal"/>
         </arc>
     </net>

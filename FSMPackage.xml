@@ -1,0 +1,1468 @@
+<?xml version="1.0" encoding="iso-8859-1"?><pnml>
+<net id="Net-One" type="P/T net">
+<labels x="543" y="3325" width="344" height="132" border="true">
+<text>Apagar bandas Elevador Derecha y Banda Pallet Derecha
+
+
+
+Encender bandas Elevador Izquierda y Banda Pallet Izquierda
+hasta
+SensorElevadorIzquierda = TRUE
+Apagar bandas Elevador Izquierda y Banda Pallet Izquierda</text>
+</labels>
+<labels x="548" y="3517" width="104" height="20" border="true">
+<text>Bajar el elevador</text>
+</labels>
+<labels x="540" y="4755" width="224" height="20" border="true">
+<text>Bajar el elvador en su totalidad</text>
+</labels>
+<labels x="524" y="5187" width="254" height="135" border="true">
+<text>Banda Salida = TRUE
+Rotacion = TRUE
+RotacionBandaHaciaAdelante = TRUE
+hasta
+BandaRotacionLimite = TRUE
+MesaRotacion = FALSE
+RotacionBandaHaciaAdelante = FALSE
+Banda Salida= FALSE</text>
+</labels>
+<labels x="482" y="437" width="210" height="56" border="true">
+<text>Clasificar con el sensor de vision la pieza de la parte de arriba y la pieza de la parte de abajo</text>
+</labels>
+<labels x="524" y="2432" width="209" height="52" border="true">
+<text>Detectar el pallet posicionado en el elevador</text>
+</labels>
+<labels x="533" y="2703" width="224" height="22" border="true">
+<text>Detectar la posicion del elevador Arriba</text>
+</labels>
+<labels x="482" y="712" width="210" height="39" border="true">
+<text>Detectar pieza clasificada en posicion para empujar</text>
+</labels>
+<labels x="498" y="1042" width="210" height="39" border="true">
+<text>Detectar pieza para succionar cuando este en posicion</text>
+</labels>
+<labels x="552" y="4405" width="224" height="21" border="true">
+<text>Devolver pallet al elevador</text>
+</labels>
+<labels x="542" y="4920" width="179" height="37" border="true">
+<text>Elevador Down = TRUE
+temporizado T#5s</text>
+</labels>
+<labels x="492" y="270" width="105" height="101" border="true">
+<text>Encender Bandas
+BandaPackage &amp;&amp; BandaPiezaArriba &amp;&amp; BandaPiezaAbajo</text>
+</labels>
+<labels x="535" y="3105" width="254" height="71" border="true">
+<text>Encender bandas Elevador Derecha y Banda Pallet Derecha
+hasta
+Limite de Pallet = TRUE</text>
+</labels>
+<labels x="528" y="2297" width="179" height="36" border="true">
+<text>Encender la banda BandaPallet y ElevadorIzquierda</text>
+</labels>
+<labels x="538" y="5070" width="194" height="21" border="true">
+<text>encender la banda de salida</text>
+</labels>
+<labels x="543" y="4595" width="284" height="52" border="true">
+<text>Encender Roller Conveyor Izq y Elevador Izquierda
+hasta
+SensorElevadorIzquierda = FALSE</text>
+</labels>
+<labels x="494" y="107" width="165" height="39" border="true">
+<text>Estado inicial
+Validar si ButtonStart = TRUE</text>
+</labels>
+<labels x="517" y="2141" width="224" height="53" border="true">
+<text>Iniciar el encendido de la banda de los pallet y la banda del elevador hacia la izquierda</text>
+</labels>
+<labels x="502" y="190" width="165" height="22" border="true">
+<text>Iniciar encendido de bandas</text>
+</labels>
+<labels x="538" y="3251" width="209" height="20" border="true">
+<text>Llevar al pallet de vuelta al elevador</text>
+</labels>
+<labels x="525" y="2976" width="269" height="22" border="true">
+<text>Llevar el pallet hasta el sensor Limite de Pallet</text>
+</labels>
+<labels x="506" y="1772" width="225" height="38" border="true">
+<text>Llevar la pieza a la otra banda para ensamblar</text>
+</labels>
+<labels x="516" y="1935" width="225" height="101" border="true">
+<text>Posicion en Z: 0.0
+Temporizador
+Posicion en Z: 8.0
+Posicion en Y: 10.0
+Posicion en X: 0.9
+SuccionadorPiezaArriba = FALSE</text>
+</labels>
+<labels x="539" y="3653" width="194" height="38" border="true">
+<text>SensorElevadorIzquierda = TRUE
+Elevador Down = TRUE</text>
+</labels>
+<labels x="550" y="3897" width="284" height="68" border="true">
+<text>Sensor Medio = TRUE
+entonces Elevador Down = False
+Elevador Derecha = TRUE
+Roller Conveyor Izq = TRUE</text>
+</labels>
+<labels x="488" y="814" width="255" height="123" border="true">
+<text>Si pendiente de ejecutar Pusher 3
+Entonces Esperar Sensor Pusher 3
+Encender Pusher 3
+
+Si pendiente de ejecutar Pusher 4
+Entonces Esperar Sensor Pusher 4
+Encender Pusher 4</text>
+</labels>
+<labels x="526" y="2835" width="224" height="39" border="true">
+<text>Si Sensor de Posicion Arriba = TRUE
+Entonces Elevator Up = FALSE</text>
+</labels>
+<labels x="528" y="2545" width="239" height="39" border="true">
+<text>Si SensorElevadorIzquierda = FALSE
+Encender Elevator UP</text>
+</labels>
+<labels x="474" y="545" width="255" height="93" border="true">
+<text>si SensorPieza = 5, 2
+Pendiente de ejecutar Pusher3(FrontLimit)
+
+si SensorPieza = 3, 6
+Pendiente de ejecutar Pusher4(FrontLimit))</text>
+</labels>
+<labels x="507" y="1146" width="195" height="157" border="true">
+<text>si SensorPiezaArriba(F_TRIG)
+entonces
+ClampPiezaArriba = TRUE
+ClampPiezaAbajo = FALSE
+
+si SensorPiezaAbajo(F_TRIG)
+entonces
+ClampPiezaArriba = FALSE
+ClampPiezaAbajo = TRUE</text>
+</labels>
+<labels x="510" y="1543" width="225" height="121" border="true">
+<text>si SensorPiezaArriba Establecer:
+Posicion en Y: 10.0
+Temporizador
+Posicion en X: 8.0
+Temporizador
+Posicion en Z: 8.0
+SuccionadorPiezaArriba = TRUE</text>
+</labels>
+<labels x="548" y="4181" width="239" height="106" border="true">
+<text>si Sensor Posicion Caja = TRUE
+entonces
+Posicion en X = 0.9
+Posicion en Y = 3.0
+Posicion en Z = 0.0
+SuccionadorPiezaArriba = FALSE</text>
+</labels>
+<labels x="511" y="1408" width="165" height="38" border="true">
+<text>Ubicar succionador en la pieza clampeada</text>
+</labels>
+<labels x="538" y="3808" width="299" height="20" border="true">
+<text>Verificando que el elevador este en la posicion medio</text>
+</labels>
+<labels x="543" y="4061" width="269" height="38" border="true">
+<text>Verificando que la caja este en posicion para depositar la pieza</text>
+</labels>
+<place id="P0">
+<graphics>
+<position x="360.0" y="105.0"/>
+</graphics>
+<name>
+<value>ESPERA</value>
+<graphics>
+<offset x="-3.0" y="30.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>1</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P1">
+<graphics>
+<position x="360.0" y="285.0"/>
+</graphics>
+<name>
+<value>ARRANCANDO_BANDAS</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P10">
+<graphics>
+<position x="360.0" y="3105.0"/>
+</graphics>
+<name>
+<value>VACIANDO_CAJA_PALLET</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P11">
+<graphics>
+<position x="360.0" y="3360.0"/>
+</graphics>
+<name>
+<value>DEVOLVIENDO_PALLET</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P12">
+<graphics>
+<position x="360.0" y="3660.0"/>
+</graphics>
+<name>
+<value>BAJANDO_EL_ELEVADOR</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P13">
+<graphics>
+<position x="360.0" y="3915.0"/>
+</graphics>
+<name>
+<value>P13</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P14">
+<graphics>
+<position x="360.0" y="4215.0"/>
+</graphics>
+<name>
+<value>COLOCANDO_PIEZA_EN_CAJA</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P15">
+<graphics>
+<position x="360.0" y="4575.0"/>
+</graphics>
+<name>
+<value>DEVOLVIENDO_PALLET_ELEVADOR_2.0</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P16">
+<graphics>
+<position x="360.0" y="4920.0"/>
+</graphics>
+<name>
+<value>BAJANDO_ELEVADOR_2.0</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P17">
+<graphics>
+<position x="360.0" y="5220.0"/>
+</graphics>
+<name>
+<value>ENCENDIENDO_BANDA_SALIDA</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P2">
+<graphics>
+<position x="360.0" y="570.0"/>
+</graphics>
+<name>
+<value>ESPERANDO_CLASIFICACION_DE_PIEZA</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P3">
+<graphics>
+<position x="360.0" y="840.0"/>
+</graphics>
+<name>
+<value>ESPERANDO_DETECCION_PIEZA</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P4">
+<graphics>
+<position x="360.0" y="1215.0"/>
+</graphics>
+<name>
+<value>CLAMPEANDO</value>
+<graphics>
+<offset x="-5.0" y="36.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P5">
+<graphics>
+<position x="360.0" y="1575.0"/>
+</graphics>
+<name>
+<value>RECOGIENDO_PIEZA_SUCCIONADA</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P6">
+<graphics>
+<position x="360.0" y="1950.0"/>
+</graphics>
+<name>
+<value>VACIANDO_SUCCIONADOR</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P7">
+<graphics>
+<position x="360.0" y="2280.0"/>
+</graphics>
+<name>
+<value>ARRANCANDO_BANDA_PALLET</value>
+<graphics>
+<offset x="-5.0" y="36.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P8">
+<graphics>
+<position x="360.0" y="2550.0"/>
+</graphics>
+<name>
+<value>ESPERANDO_DETECCION_DE_PALLET</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<place id="P9">
+<graphics>
+<position x="360.0" y="2835.0"/>
+</graphics>
+<name>
+<value>ESPERANDO_DETECCION_ELEVADOR_UP</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<initialMarking>
+<value>0</value>
+<graphics>
+<offset x="0.0" y="0.0"/>
+</graphics>
+</initialMarking>
+<capacity>
+<value>0</value>
+</capacity>
+</place>
+<transition id="T0">
+<graphics>
+<position x="360.0" y="180.0"/>
+</graphics>
+<name>
+<value>INICIAR</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T1">
+<graphics>
+<position x="360.0" y="435.0"/>
+</graphics>
+<name>
+<value>CLASIFICAR_PIEZA</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T10">
+<graphics>
+<position x="360.0" y="3240.0"/>
+</graphics>
+<name>
+<value>DEVOLVER_PALLET</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T11">
+<graphics>
+<position x="360.0" y="3510.0"/>
+</graphics>
+<name>
+<value>BAJAR_ELEVADOR</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T12">
+<graphics>
+<position x="360.0" y="3795.0"/>
+</graphics>
+<name>
+<value>POSICIONAR_ELEVADOR_MEDIO</value>
+<graphics>
+<offset x="-5.0" y="36.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T13">
+<graphics>
+<position x="360.0" y="4050.0"/>
+</graphics>
+<name>
+<value>COLOCAR_PIEZA_CAJA</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T14">
+<graphics>
+<position x="360.0" y="4395.0"/>
+</graphics>
+<name>
+<value>DELVOLVER_PALLET_2.0</value>
+<graphics>
+<offset x="-4.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T15">
+<graphics>
+<position x="360.0" y="4740.0"/>
+</graphics>
+<name>
+<value>BAJANDO_ELEVADOR_2.0</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T16">
+<graphics>
+<position x="360.0" y="5055.0"/>
+</graphics>
+<name>
+<value>ENCENDER_BANDA_SALIDA</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T17">
+<graphics>
+<position x="360.0" y="5355.0"/>
+</graphics>
+<name>
+<value>REINICIAR</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T2">
+<graphics>
+<position x="360.0" y="705.0"/>
+</graphics>
+<name>
+<value>DETECTAR_PIEZA_EMPUJAR</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T3">
+<graphics>
+<position x="360.0" y="1035.0"/>
+</graphics>
+<name>
+<value>CLAMPEAR_PIEZA</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T4">
+<graphics>
+<position x="360.0" y="1395.0"/>
+</graphics>
+<name>
+<value>RECOGER_PIEZA_ARRIBA</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T5">
+<graphics>
+<position x="360.0" y="1755.0"/>
+</graphics>
+<name>
+<value>VACIAR_SUCCIONADOR_PIEZA</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T6">
+<graphics>
+<position x="360.0" y="2145.0"/>
+</graphics>
+<name>
+<value>INICIAR_BANDAS</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T7">
+<graphics>
+<position x="360.0" y="2430.0"/>
+</graphics>
+<name>
+<value>DETECTAR_PALLET_A_ELEVAR</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T8">
+<graphics>
+<position x="360.0" y="2685.0"/>
+</graphics>
+<name>
+<value>DETECCION_DE_ELEVADOR_UP</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<transition id="T9">
+<graphics>
+<position x="360.0" y="2970.0"/>
+</graphics>
+<name>
+<value>VACIAR_CAJA_PALLET</value>
+<graphics>
+<offset x="-5.0" y="35.0"/>
+</graphics>
+</name>
+<orientation>
+<value>90</value>
+</orientation>
+<rate>
+<value>1.0</value>
+</rate>
+<timed>
+<value>false</value>
+</timed>
+<infiniteServer>
+<value>false</value>
+</infiniteServer>
+<priority>
+<value>1</value>
+</priority>
+</transition>
+<arc id="P0 to T0" source="P0" target="T0">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="131" curvePoint="false"/>
+<arcpath id="001" x="371" y="186" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P10 to T10" source="P10" target="T10">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="3131" curvePoint="false"/>
+<arcpath id="001" x="371" y="3246" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P11 to T11" source="P11" target="T11">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="3386" curvePoint="false"/>
+<arcpath id="001" x="371" y="3516" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P12 to T12" source="P12" target="T12">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="3686" curvePoint="false"/>
+<arcpath id="001" x="371" y="3801" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P13 to T13" source="P13" target="T13">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="3941" curvePoint="false"/>
+<arcpath id="001" x="371" y="4056" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P14 to T14" source="P14" target="T14">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="4242" curvePoint="false"/>
+<arcpath id="001" x="371" y="4401" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P15 to T15" source="P15" target="T15">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="4602" curvePoint="false"/>
+<arcpath id="001" x="371" y="4746" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P16 to T16" source="P16" target="T16">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="4947" curvePoint="false"/>
+<arcpath id="001" x="371" y="5061" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P17 to T17" source="P17" target="T17">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="5247" curvePoint="false"/>
+<arcpath id="001" x="371" y="5361" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P1 to T1" source="P1" target="T1">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="311" curvePoint="false"/>
+<arcpath id="001" x="371" y="441" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P2 to T2" source="P2" target="T2">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="596" curvePoint="false"/>
+<arcpath id="001" x="371" y="711" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P3 to T3" source="P3" target="T3">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="866" curvePoint="false"/>
+<arcpath id="001" x="371" y="1041" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P4 to T4" source="P4" target="T4">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="1241" curvePoint="false"/>
+<arcpath id="001" x="371" y="1401" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P5 to T5" source="P5" target="T5">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="1601" curvePoint="false"/>
+<arcpath id="001" x="371" y="1761" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P6 to T6" source="P6" target="T6">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="1976" curvePoint="false"/>
+<arcpath id="001" x="371" y="2151" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P7 to T7" source="P7" target="T7">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="2306" curvePoint="false"/>
+<arcpath id="001" x="371" y="2436" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P8 to T8" source="P8" target="T8">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="2576" curvePoint="false"/>
+<arcpath id="001" x="371" y="2691" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="P9 to T9" source="P9" target="T9">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="2861" curvePoint="false"/>
+<arcpath id="001" x="371" y="2976" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T0 to P1" source="T0" target="P1">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="196" curvePoint="false"/>
+<arcpath id="001" x="371" y="282" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T10 to P11" source="T10" target="P11">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="3256" curvePoint="false"/>
+<arcpath id="001" x="371" y="3357" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T11 to P12" source="T11" target="P12">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="3526" curvePoint="false"/>
+<arcpath id="001" x="371" y="3657" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T12 to P13" source="T12" target="P13">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="3811" curvePoint="false"/>
+<arcpath id="001" x="371" y="3912" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T13 to P14" source="T13" target="P14">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="4066" curvePoint="false"/>
+<arcpath id="001" x="371" y="4212" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T14 to P15" source="T14" target="P15">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="4411" curvePoint="false"/>
+<arcpath id="001" x="371" y="4572" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T15 to P16" source="T15" target="P16">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="4756" curvePoint="false"/>
+<arcpath id="001" x="371" y="4917" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T16 to P17" source="T16" target="P17">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="5071" curvePoint="false"/>
+<arcpath id="001" x="371" y="5217" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T17 to P0" source="T17" target="P0">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="386" y="5367" curvePoint="false"/>
+<arcpath id="001" x="447" y="5367" curvePoint="false"/>
+<arcpath id="002" x="417" y="117" curvePoint="false"/>
+<arcpath id="003" x="387" y="117" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T1 to P2" source="T1" target="P2">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="451" curvePoint="false"/>
+<arcpath id="001" x="371" y="567" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T2 to P3" source="T2" target="P3">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="721" curvePoint="false"/>
+<arcpath id="001" x="371" y="837" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T3 to P4" source="T3" target="P4">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="1051" curvePoint="false"/>
+<arcpath id="001" x="371" y="1212" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T4 to P5" source="T4" target="P5">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="1411" curvePoint="false"/>
+<arcpath id="001" x="371" y="1572" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T5 to P6" source="T5" target="P6">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="1771" curvePoint="false"/>
+<arcpath id="001" x="371" y="1947" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T6 to P7" source="T6" target="P7">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="2161" curvePoint="false"/>
+<arcpath id="001" x="371" y="2277" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T7 to P8" source="T7" target="P8">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="2446" curvePoint="false"/>
+<arcpath id="001" x="371" y="2547" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T8 to P9" source="T8" target="P9">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="2701" curvePoint="false"/>
+<arcpath id="001" x="371" y="2832" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+<arc id="T9 to P10" source="T9" target="P10">
+<graphics/>
+<inscription>
+<value>1</value>
+<graphics/>
+</inscription>
+<tagged>
+<value>false</value>
+</tagged>
+<arcpath id="000" x="371" y="2986" curvePoint="false"/>
+<arcpath id="001" x="371" y="3102" curvePoint="false"/>
+<type value="normal"/>
+</arc>
+</net>
+</pnml>
